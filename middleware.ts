@@ -1,7 +1,12 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 
-export const { auth } = NextAuth(authConfig);
+export const { auth } = NextAuth({
+  ...authConfig,
+  trustHost:
+    process.env.NODE_ENV === "development" ||
+    process.env.NEXTAUTH_URL === "https://black-espresso-eventme.vercel.app",
+});
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
