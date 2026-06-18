@@ -164,11 +164,39 @@ AUTH_SECRET="your-secret-here"
 
 ## 🚀 Deployment
 
-### Recommended: Vercel
+### Vercel from Gitea
 
-1. Connect GitHub repository
-2. Add environment variables
-3. Deploy automatically on push
+Since this project is hosted on Gitea, we use Vercel CLI for deployment:
+
+1. **Create Vercel project**:
+   ```bash
+   npm i -g vercel
+   vercel login
+   vercel link
+   ```
+
+2. **Get environment variables**:
+   ```bash
+   cat .vercel/project.json
+   # Note: VERCEL_ORG_ID and VERCEL_PROJECT_ID
+   ```
+
+3. **Add Gitea Secrets**:
+   - Go to Gitea → Repository Settings → Secrets
+   - Add `VERCEL_TOKEN` (get from `vercel tokens create`)
+   - Add `VERCEL_ORG_ID` from project.json
+   - Add `VERCEL_PROJECT_ID` from project.json
+
+4. **Push to main** - Deployment triggers automatically via `.gitea/workflows/deploy.yml`
+
+### Neon Database Setup
+
+1. Create project at [neon.tech](https://neon.tech)
+2. Copy connection string from Neon Console
+3. Set as `DATABASE_URL` in Vercel Environment Variables:
+   ```bash
+   vercel env add DATABASE_URL
+   ```
 
 ### Alternative: Docker
 
