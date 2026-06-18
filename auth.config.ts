@@ -4,9 +4,7 @@ export const authConfig = {
   pages: {
     signIn: "/login",
   },
-  trustHost:
-    process.env.NODE_ENV === "development" ||
-    process.env.NEXTAUTH_URL === "https://black-espresso-eventme.vercel.app",
+  trustHost: true,
   session: {
     strategy: "jwt",
   },

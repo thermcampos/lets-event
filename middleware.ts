@@ -1,30 +1,32 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export const { auth } = NextAuth({
-  ...authConfig,
-  trustHost:
-    process.env.NODE_ENV === "development" ||
-    process.env.NEXTAUTH_URL === "https://black-espresso-eventme.vercel.app",
-});
+export function middleware(request: NextRequest) {
+  // Check for session token cookie (NextAuth v5 uses __Host-next-auth.session-token in production)
+  const token =
+    request.cookies.get("next-auth.session-token")?.value ||
+    request.cookies.get("__Host-next-auth.session-token")?.value ||
+    request.cookies.get("__Secure-next-auth.session-token")?.value;
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
+  const isLoggedIn = !!token;
+
   const isAuthRoute =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/register");
-  const isDashboardRoute = req.nextUrl.pathname.startsWith("/dashboard");
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/register");
+  const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
 
   if (isDashboardRoute && !isLoggedIn) {
-    const loginUrl = new URL("/login", req.url);
-    return Response.redirect(loginUrl);
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (isAuthRoute && isLoggedIn) {
-    const dashboardUrl = new URL("/dashboard", req.url);
-    return Response.redirect(dashboardUrl);
+    const dashboardUrl = new URL("/dashboard", request.url);
+    return NextResponse.redirect(dashboardUrl);
   }
-});
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
