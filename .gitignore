@@ -51,3 +51,4 @@ node_modules/
 /playwright/.auth/
 
 .idea/
+client_secret*.json
