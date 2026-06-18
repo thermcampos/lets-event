@@ -1,25 +1,29 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export const { auth } = NextAuth(authConfig);
+export default async function proxy(req: NextRequest) {
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  });
+  const isLoggedIn = !!token;
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
+  const { pathname } = req.nextUrl;
   const isAuthRoute =
-      req.nextUrl.pathname.startsWith("/login") ||
-      req.nextUrl.pathname.startsWith("/register");
-  const isDashboardRoute = req.nextUrl.pathname.startsWith("/dashboard");
+    pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isDashboardRoute = pathname.startsWith("/dashboard");
 
   if (isDashboardRoute && !isLoggedIn) {
-    const loginUrl = new URL("/login", req.url);
-    return Response.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   if (isAuthRoute && isLoggedIn) {
-    const dashboardUrl = new URL("/dashboard", req.url);
-    return Response.redirect(dashboardUrl);
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
-});
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
