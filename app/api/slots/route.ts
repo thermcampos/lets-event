@@ -1,4 +1,5 @@
-import { parse, startOfDay } from "date-fns";
+import { addDays, format, parse } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma.server";
 import { getAvailableSlots } from "@/lib/slots";
@@ -37,11 +38,12 @@ export async function GET(request: NextRequest) {
 
     // Parse date
     const date = parse(dateStr, "yyyy-MM-dd", new Date());
+    const timezone = eventType.user.timezone;
 
-    // Get existing bookings for this event type on this date
-    const startOfDate = startOfDay(date);
-    const endOfDate = new Date(startOfDate);
-    endOfDate.setDate(endOfDate.getDate() + 1);
+    // Compute day boundaries in the user's timezone so late-night slots aren't missed
+    const nextDateStr = format(addDays(date, 1), "yyyy-MM-dd");
+    const startOfDate = fromZonedTime(`${dateStr}T00:00:00`, timezone);
+    const endOfDate = fromZonedTime(`${nextDateStr}T00:00:00`, timezone);
 
     const existingBookings = await prisma.booking.findMany({
       where: {
