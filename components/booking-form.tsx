@@ -1,7 +1,7 @@
 "use client";
 
 import type { Availability, EventType } from "@prisma/client";
-import { format, startOfDay } from "date-fns";
+import { addMinutes, format, startOfDay } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -127,7 +127,12 @@ export function BookingForm({ eventType }: BookingFormProps) {
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
-          disabled={(date) => date < startOfDay(new Date())}
+          disabled={(date) =>
+            date <
+            startOfDay(
+              addMinutes(new Date(), eventType.minimumNoticeHours * 60),
+            )
+          }
           className="rounded-md border"
         />
       </div>

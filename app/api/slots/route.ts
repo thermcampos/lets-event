@@ -67,9 +67,11 @@ export async function GET(request: NextRequest) {
     // Calculate available slots
     const slots = getAvailableSlots(date, eventType, existingBookings);
 
-    // Filter slots that are in the future
-    const now = new Date();
-    const futureSlots = slots.filter((slot) => slot.start > now);
+    // Filter slots that respect the minimum notice window
+    const minBookableTime = new Date(
+      Date.now() + eventType.minimumNoticeHours * 60 * 60 * 1000,
+    );
+    const futureSlots = slots.filter((slot) => slot.start > minBookableTime);
 
     return NextResponse.json({
       slots: futureSlots.map((slot) => ({
