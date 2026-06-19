@@ -110,6 +110,7 @@ export async function POST(
         previousStartTime: booking.startTime,
         previousEndTime: booking.endTime,
         meetLink,
+        timezone: booking.user.timezone,
       });
     } catch (emailError) {
       console.error("Email notification error:", emailError);

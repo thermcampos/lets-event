@@ -52,6 +52,7 @@ async function cancelBooking(id: string) {
       eventTitle: booking.eventType.title,
       startTime: booking.startTime,
       endTime: booking.endTime,
+      timezone: booking.user.timezone,
     });
   } catch (emailError) {
     console.error("Email notification error:", emailError);

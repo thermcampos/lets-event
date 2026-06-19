@@ -199,6 +199,7 @@ export async function POST(request: NextRequest) {
             endTime: end,
             guestNotes,
             meetLink: calendarEvent.meetLink,
+            timezone: booking.user.timezone,
           });
         } catch (emailError) {
           console.error("Email notification error:", emailError);
@@ -225,6 +226,7 @@ export async function POST(request: NextRequest) {
         startTime: start,
         endTime: end,
         guestNotes,
+        timezone: booking.user.timezone,
       });
     } catch (emailError) {
       console.error("Email notification error:", emailError);

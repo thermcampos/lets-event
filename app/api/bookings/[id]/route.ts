@@ -61,6 +61,7 @@ export async function PATCH(
         startTime: updatedBooking.startTime,
         endTime: updatedBooking.endTime,
         status,
+        timezone: user.timezone,
       });
     } catch (emailError) {
       console.error("Email notification error:", emailError);
