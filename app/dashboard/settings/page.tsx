@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { isGoogleCalendarConnected } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
+import { AvatarUpload } from "./avatar-upload";
 import { BookingLinkCard } from "./booking-link-card";
 import { GoogleCalendarCard } from "./google-calendar-card";
 import { SettingsForm } from "./settings-form";
@@ -22,7 +23,7 @@ export default async function SettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { username: true, name: true, email: true, timezone: true },
+    select: { username: true, name: true, email: true, timezone: true, image: true },
   });
 
   if (!user) {
@@ -87,7 +88,8 @@ export default async function SettingsPage() {
             booking link.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          <AvatarUpload currentImage={user.image} name={user.name} />
           <SettingsForm user={user} updateSettings={updateSettings} />
         </CardContent>
       </Card>

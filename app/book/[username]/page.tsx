@@ -1,4 +1,5 @@
 import { Calendar, Clock } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,17 @@ export default async function BookingPage({ params }: BookingPageProps) {
     <div className="min-h-screen bg-gray-50 dark:bg-background py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
+          {user.image && (
+            <div className="relative w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+              <Image
+                src={user.image}
+                alt={user.name || username}
+                fill
+                className="object-cover"
+                sizes="96px"
+              />
+            </div>
+          )}
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {user.name || username}
           </h1>
