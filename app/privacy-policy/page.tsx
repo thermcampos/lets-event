@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <Link href="/" className="flex items-center space-x-2">
             <Image src="/logo.png" alt="Event.me" width={40} height={40} />
@@ -180,7 +180,7 @@ export default function PrivacyPolicyPage() {
         </Card>
       </main>
 
-      <footer className="bg-white border-t mt-12">
+      <footer className="bg-card border-t mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-muted-foreground text-sm">
           <div className="space-x-4">
             <Link href="/privacy-policy" className="hover:underline">
