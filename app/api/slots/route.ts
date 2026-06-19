@@ -1,4 +1,3 @@
-import { addDays, format, parse } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma.server";
@@ -36,13 +35,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse date
-    const date = parse(dateStr, "yyyy-MM-dd", new Date());
     const timezone = eventType.user.timezone;
 
-    // Compute day boundaries in the user's timezone so late-night slots aren't missed
-    const nextDateStr = format(addDays(date, 1), "yyyy-MM-dd");
+    // Interpret the date string as midnight in the user's timezone so that day-of-week
+    // lookup in getAvailableSlots stays on the correct calendar day. Using UTC midnight
+    // would shift back one day for negative-offset users (Americas) and forward for
+    // positive-offset users (Asia/Pacific), causing wrong availability lookups.
     const startOfDate = fromZonedTime(`${dateStr}T00:00:00`, timezone);
+    const date = startOfDate;
+
+    // Compute next-date string via UTC date arithmetic to avoid timezone boundary issues.
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const nextDateStr = new Date(Date.UTC(year, month - 1, day + 1))
+      .toISOString()
+      .slice(0, 10);
     const endOfDate = fromZonedTime(`${nextDateStr}T00:00:00`, timezone);
 
     const existingBookings = await prisma.booking.findMany({
