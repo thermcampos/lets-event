@@ -1,5 +1,6 @@
 import type { Availability, Booking, EventType } from "@prisma/client";
-import { addDays, addMinutes, isAfter, isBefore, startOfDay } from "date-fns";
+import { addDays, addMinutes, format, isAfter, isBefore, startOfDay } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export interface TimeSlot {
   start: Date;
@@ -13,8 +14,11 @@ export function getAvailableSlots(
   },
   existingBookings: Booking[],
 ): TimeSlot[] {
-  const dayOfWeek = date.getDay();
-  const _timezone = eventType.user.timezone;
+  const timezone = eventType.user.timezone;
+
+  // Convert UTC date to user's timezone to get the correct day of week
+  const zonedDate = toZonedTime(date, timezone);
+  const dayOfWeek = zonedDate.getDay();
 
   // Find availability for this day
   const dayAvailability = eventType.user.availability.filter(
@@ -27,24 +31,25 @@ export function getAvailableSlots(
 
   const slots: TimeSlot[] = [];
 
+  // Get date string in user's timezone (YYYY-MM-DD)
+  const dateStr = format(zonedDate, "yyyy-MM-dd");
+
   for (const availability of dayAvailability) {
-    // Parse start and end times
-    const [startHour, startMinute] = availability.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-
-    const start = new Date(date);
-    start.setHours(startHour, startMinute, 0, 0);
-
-    const end = new Date(date);
-    end.setHours(endHour, endMinute, 0, 0);
+    // Parse start and end times and convert from user's timezone to UTC
+    const startZoned = fromZonedTime(
+      `${dateStr}T${availability.startTime}:00`,
+      timezone,
+    );
+    const endZoned = fromZonedTime(
+      `${dateStr}T${availability.endTime}:00`,
+      timezone,
+    );
 
     // Generate slots
-    let currentSlot = start;
+    let currentSlot = startZoned;
     while (
-      isBefore(addMinutes(currentSlot, eventType.duration), end) ||
-      currentSlot.getTime() === end.getTime() - eventType.duration * 60000
+      isBefore(addMinutes(currentSlot, eventType.duration), endZoned) ||
+      currentSlot.getTime() === endZoned.getTime() - eventType.duration * 60000
     ) {
       const slotEnd = addMinutes(currentSlot, eventType.duration);
 
@@ -85,6 +90,7 @@ export function getBookableDates(
 ): Date[] {
   const dates: Date[] = [];
   const now = new Date();
+  const timezone = eventType.user.timezone;
 
   // Calculate min and max booking dates
   const minDate = addMinutes(now, eventType.minimumNoticeHours * 60);
@@ -98,7 +104,9 @@ export function getBookableDates(
     isBefore(currentDate, endDate) ||
     currentDate.getTime() === endDate.getTime()
   ) {
-    const dayOfWeek = currentDate.getDay();
+    // Convert to user's timezone to get correct day of week
+    const zonedDate = toZonedTime(currentDate, timezone);
+    const dayOfWeek = zonedDate.getDay();
 
     // Check if there's availability for this day
     const hasAvailability = eventType.user.availability.some(
