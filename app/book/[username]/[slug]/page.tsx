@@ -1,4 +1,5 @@
-import { Clock } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookingForm } from "@/components/booking-form";
 import {
@@ -54,8 +55,17 @@ export default async function BookingPage({ params }: BookingPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Link
+            href={`/book/${username}`}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
+        </div>
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between">
