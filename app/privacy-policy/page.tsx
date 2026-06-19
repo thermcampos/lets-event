@@ -19,161 +19,266 @@ export default function PrivacyPolicyPage() {
           <CardHeader>
             <CardTitle className="text-3xl">Privacy Policy</CardTitle>
             <p className="text-muted-foreground text-sm">
-              Last updated: February 28, 2026
+              Last updated: June 19, 2026
             </p>
           </CardHeader>
           <CardContent className="prose max-w-none space-y-6">
             <section>
-              <h2 className="text-xl font-semibold mb-3">1. Introduction</h2>
-              <p className="text-gray-700">
-                Welcome to Event.me. We respect your privacy and are committed
-                to protecting your personal data. This privacy policy will
-                inform you about how we look after your personal data and tell
-                you about your privacy rights.
+              <h2 className="text-xl font-semibold mb-3">1. Overview</h2>
+              <p className="text-muted-foreground">
+                Event.me is a scheduling tool that lets you share your
+                availability and accept bookings. We collect only what is
+                strictly necessary to provide this service. We do not run
+                analytics, sell data, or track your behavior.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">2. Data We Collect</h2>
-              <p className="text-gray-700 mb-2">
-                We may collect, use, store and transfer different kinds of
-                personal data about you:
+              <h2 className="text-xl font-semibold mb-3">
+                2. Data We Store
+              </h2>
+              <p className="text-muted-foreground mb-2">
+                When you create an account, we store:
               </p>
-              <ul className="list-disc pl-6 text-gray-700 space-y-1">
+              <ul className="list-disc pl-6 text-muted-foreground space-y-1">
+                <li>Your name and email address</li>
                 <li>
-                  <strong>Identity Data:</strong> name, username
+                  A hashed (non-reversible) version of your password — we never
+                  store your password in plain text
+                </li>
+                <li>Your profile picture, if you upload one</li>
+                <li>
+                  Your availability settings, event types, and booking records
                 </li>
                 <li>
-                  <strong>Contact Data:</strong> email address
-                </li>
-                <li>
-                  <strong>Technical Data:</strong> IP address, browser type,
-                  timezone, location
-                </li>
-                <li>
-                  <strong>Usage Data:</strong> information about how you use our
-                  service
-                </li>
-                <li>
-                  <strong>Calendar Data:</strong> availability settings, event
-                  types, booking information
-                </li>
-                <li>
-                  <strong>Google Account Data:</strong> when you connect your
-                  Google Calendar
+                  Your Google Calendar OAuth tokens, if you connect your Google
+                  account
                 </li>
               </ul>
+              <p className="text-muted-foreground mt-2">
+                We do not collect your location, device fingerprint, browsing
+                history, or any data beyond what is listed above.
+              </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold mb-3">
                 3. How We Use Your Data
               </h2>
-              <p className="text-gray-700 mb-2">
-                We use your personal data to:
+              <p className="text-muted-foreground mb-2">
+                Your data is used exclusively to operate the service:
               </p>
-              <ul className="list-disc pl-6 text-gray-700 space-y-1">
-                <li>Provide and maintain our scheduling service</li>
+              <ul className="list-disc pl-6 text-muted-foreground space-y-1">
+                <li>Authenticate your account</li>
+                <li>Display your availability to people booking with you</li>
                 <li>Create and manage bookings</li>
-                <li>Sync with your Google Calendar</li>
-                <li>Send booking confirmations and reminders</li>
-                <li>Improve our service and user experience</li>
-                <li>Communicate with you about service updates</li>
+                <li>
+                  Sync events with your Google Calendar when you have enabled
+                  that integration
+                </li>
+                <li>
+                  Send transactional emails (booking confirmations, reminders,
+                  and cancellations)
+                </li>
               </ul>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">4. Data Sharing</h2>
-              <p className="text-gray-700">
-                We do not sell your personal data. We may share your data with:
+              <p className="text-muted-foreground mt-2">
+                We do not use your data for marketing, profiling, or any purpose
+                beyond what is described here.
               </p>
-              <ul className="list-disc pl-6 text-gray-700 space-y-1">
-                <li>Google Calendar (when you connect your account)</li>
-                <li>Service providers who help us operate our platform</li>
-                <li>Law enforcement when required by law</li>
-              </ul>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">5. Data Security</h2>
-              <p className="text-gray-700">
-                We implement appropriate security measures to protect your
-                personal data. However, no method of transmission over the
-                internet is 100% secure, and we cannot guarantee absolute
-                security.
+              <h2 className="text-xl font-semibold mb-3">
+                4. Third-Party Services
+              </h2>
+              <p className="text-muted-foreground mb-3">
+                Event.me is built on third-party infrastructure. Each provider
+                has its own privacy policy that applies to the data they handle.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-foreground">Vercel</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Event.me is hosted on{" "}
+                    <a
+                      href="https://vercel.com"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Vercel
+                    </a>
+                    . As our hosting provider, Vercel may collect infrastructure
+                    telemetry such as IP addresses, request timestamps, and
+                    performance metrics in order to operate their platform. Your
+                    profile pictures are stored in Vercel Blob. Refer to{" "}
+                    <a
+                      href="https://vercel.com/legal/privacy-policy"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Vercel's Privacy Policy
+                    </a>{" "}
+                    for details.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-foreground">Google</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    If you connect your Google Calendar, we store an OAuth
+                    access token to read and write calendar events on your
+                    behalf. We request only the minimum required scopes. You can
+                    revoke this access at any time from your{" "}
+                    <a
+                      href="https://myaccount.google.com/permissions"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Google account permissions
+                    </a>
+                    . Refer to{" "}
+                    <a
+                      href="https://policies.google.com/privacy"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Google's Privacy Policy
+                    </a>
+                    .
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-foreground">Resend</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Transactional emails (booking confirmations, reminders, and
+                    cancellations) are sent through{" "}
+                    <a
+                      href="https://resend.com"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Resend
+                    </a>
+                    . Your email address and booking details are transmitted to
+                    Resend for delivery. Refer to{" "}
+                    <a
+                      href="https://resend.com/legal/privacy-policy"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Resend's Privacy Policy
+                    </a>
+                    .
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold mb-3">5. Data Retention</h2>
+              <p className="text-muted-foreground">
+                Your data is retained for as long as your account exists. When
+                you delete your account, your personal data, event types,
+                availability settings, and booking records are permanently
+                removed from our database. Profile pictures stored in Vercel
+                Blob are also deleted at that time.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold mb-3">6. Your Rights</h2>
-              <p className="text-gray-700 mb-2">You have the right to:</p>
-              <ul className="list-disc pl-6 text-gray-700 space-y-1">
-                <li>Access your personal data</li>
-                <li>Correct inaccurate data</li>
-                <li>Request deletion of your data</li>
-                <li>Object to processing of your data</li>
-                <li>Request transfer of your data</li>
-                <li>Withdraw consent at any time</li>
+              <p className="text-muted-foreground mb-2">
+                You have the right to:
+              </p>
+              <ul className="list-disc pl-6 text-muted-foreground space-y-1">
+                <li>
+                  <strong>Access</strong> — request a copy of the personal data
+                  we hold about you
+                </li>
+                <li>
+                  <strong>Correction</strong> — update your name, email, or
+                  profile picture at any time from account settings
+                </li>
+                <li>
+                  <strong>Deletion</strong> — delete your account, which
+                  permanently removes all your data
+                </li>
+                <li>
+                  <strong>Portability</strong> — request an export of your data
+                </li>
+                <li>
+                  <strong>Revoke Google access</strong> — disconnect your Google
+                  Calendar at any time from account settings
+                </li>
               </ul>
+              <p className="text-muted-foreground mt-2">
+                To exercise any of these rights, contact us at the address
+                below.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">7. Cookies</h2>
-              <p className="text-gray-700">
-                We use cookies and similar tracking technologies to track
-                activity on our service and store certain information. You can
-                instruct your browser to refuse all cookies or to indicate when
-                a cookie is being sent.
+              <h2 className="text-xl font-semibold mb-3">7. Security</h2>
+              <p className="text-muted-foreground">
+                Passwords are hashed using bcrypt before storage. All data in
+                transit is encrypted via HTTPS. We do not store payment
+                information. While we take reasonable precautions, no system is
+                completely immune to attack and we cannot guarantee absolute
+                security.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold mb-3">8. Cookies</h2>
+              <p className="text-muted-foreground">
+                Event.me uses a single session cookie to keep you authenticated.
+                No third-party tracking cookies, advertising pixels, or
+                analytics scripts are loaded.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold mb-3">
-                8. Third-Party Services
+                9. Children's Privacy
               </h2>
-              <p className="text-gray-700">
-                Our service integrates with Google Calendar. When you connect
-                your Google account, you are subject to Google's Privacy Policy
-                in addition to ours.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">9. Data Retention</h2>
-              <p className="text-gray-700">
-                We retain your personal data only for as long as necessary to
-                fulfill the purposes outlined in this privacy policy, unless a
-                longer retention period is required by law.
+              <p className="text-muted-foreground">
+                Event.me is not directed to individuals under 13. We do not
+                knowingly collect data from children. If you believe a child has
+                created an account, contact us and we will delete it promptly.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold mb-3">
-                10. Children's Privacy
+                10. Changes to This Policy
               </h2>
-              <p className="text-gray-700">
-                Our service is not directed to individuals under the age of 13.
-                We do not knowingly collect personal data from children under
-                13.
+              <p className="text-muted-foreground">
+                If we make material changes to this policy, we will update the
+                date at the top of this page and, where appropriate, notify
+                registered users by email.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">
-                11. Changes to This Policy
-              </h2>
-              <p className="text-gray-700">
-                We may update this privacy policy from time to time. We will
-                notify you of any changes by posting the new policy on this page
-                and updating the "Last updated" date.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">12. Contact Us</h2>
-              <p className="text-gray-700">
-                If you have any questions about this privacy policy, please
-                contact us through our support channels.
+              <h2 className="text-xl font-semibold mb-3">11. Contact</h2>
+              <p className="text-muted-foreground">
+                Questions about this policy or requests to exercise your rights
+                can be sent to{" "}
+                <a
+                  href="mailto:ricardompcampos@gmail.com"
+                  className="underline"
+                >
+                  ricardompcampos@gmail.com
+                </a>
+                .
               </p>
             </section>
           </CardContent>
