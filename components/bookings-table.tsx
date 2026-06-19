@@ -50,7 +50,7 @@ export function BookingsTable({
 
   if (bookings.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-muted-foreground">
         <p>No bookings yet</p>
       </div>
     );
@@ -61,7 +61,7 @@ export function BookingsTable({
       {bookings.map((booking) => (
         <div
           key={booking.id}
-          className="flex items-start justify-between p-4 border rounded-lg hover:bg-gray-50"
+          className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent"
         >
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -79,18 +79,18 @@ export function BookingsTable({
               </Badge>
             </div>
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               {format(new Date(booking.startTime), "PPP 'at' p")}
             </p>
 
             <div className="text-sm">
-              <p className="text-gray-600">
-                <span className="font-medium">Guest:</span> {booking.guestName}{" "}
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Guest:</span> {booking.guestName}{" "}
                 ({booking.guestEmail})
               </p>
               {booking.guestNotes && (
-                <p className="text-gray-600 mt-1">
-                  <span className="font-medium">Notes:</span>{" "}
+                <p className="text-muted-foreground mt-1">
+                  <span className="font-medium text-foreground">Notes:</span>{" "}
                   {booking.guestNotes}
                 </p>
               )}

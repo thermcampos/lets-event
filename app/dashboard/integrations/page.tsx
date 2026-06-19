@@ -50,7 +50,7 @@ export default async function IntegrationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Integrations</h1>
-        <p className="text-gray-500 mt-2">
+        <p className="text-muted-foreground mt-2">
           Connect your accounts to enable calendar sync and meeting links
         </p>
       </div>
@@ -121,7 +121,7 @@ export default async function IntegrationsPage() {
         </CardHeader>
         {googleAccount && (
           <CardContent className="border-t pt-6">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               <p>
                 <strong>Connected as:</strong> {session.user.email}
               </p>
@@ -140,7 +140,7 @@ export default async function IntegrationsPage() {
             What can you do with this integration?
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-gray-600">
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
           <div className="flex items-start">
             <CheckCircle2 className="w-4 h-4 mr-2 mt-0.5 text-green-600 flex-shrink-0" />
             <span>

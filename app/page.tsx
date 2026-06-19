@@ -26,7 +26,7 @@ export default function Home() {
             Simple Scheduling
             <span className="block text-indigo-600">Made Easy</span>
           </h1>
-          <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600 dark:text-gray-300">
+          <p className="mt-6 max-w-2xl mx-auto text-xl text-muted-foreground">
             Let people book meetings with you based on your available time
             slots. No complexity, no fuss - just clean, efficient appointment
             scheduling.
@@ -59,7 +59,7 @@ export default function Home() {
             <h3 className="mt-4 text-xl font-semibold">
               Set Your Availability
             </h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
+            <p className="mt-2 text-muted-foreground">
               Define your working hours and available time slots for each day of
               the week.
             </p>
@@ -70,7 +70,7 @@ export default function Home() {
               <Clock className="h-12 w-12 text-indigo-600" />
             </div>
             <h3 className="mt-4 text-xl font-semibold">Create Event Types</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
+            <p className="mt-2 text-muted-foreground">
               Set up different meeting types with custom durations and
               descriptions.
             </p>
@@ -81,7 +81,7 @@ export default function Home() {
               <Users className="h-12 w-12 text-indigo-600" />
             </div>
             <h3 className="mt-4 text-xl font-semibold">Share & Book</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
+            <p className="mt-2 text-muted-foreground">
               Share your booking link and let people schedule meetings with you
               instantly.
             </p>
@@ -95,18 +95,18 @@ export default function Home() {
             <div className="space-x-4 text-sm">
               <Link
                 href="/privacy-policy"
-                className="text-gray-600 dark:text-gray-400 hover:underline"
+                className="text-muted-foreground hover:underline"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms-of-use"
-                className="text-gray-600 dark:text-gray-400 hover:underline"
+                className="text-muted-foreground hover:underline"
               >
                 Terms of Use
               </Link>
             </div>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               © 2026 Event.me - Simple scheduling for everyone
             </p>
           </div>

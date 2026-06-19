@@ -39,17 +39,17 @@ export default async function BookingCancelledPage({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="text-center text-gray-600">
+          <div className="text-center text-muted-foreground">
             <p>Your meeting has been cancelled successfully.</p>
           </div>
 
           <div className="border-t pt-4 space-y-3">
             <div>
-              <p className="text-sm text-gray-500">Event Type</p>
+              <p className="text-sm text-muted-foreground">Event Type</p>
               <p className="font-medium">{booking.eventType.title}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Scheduled Time</p>
+              <p className="text-sm text-muted-foreground">Scheduled Time</p>
               <p className="font-medium">
                 {new Date(booking.startTime).toLocaleString("en-US", {
                   dateStyle: "full",
@@ -58,7 +58,7 @@ export default async function BookingCancelledPage({
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">With</p>
+              <p className="text-sm text-muted-foreground">With</p>
               <p className="font-medium">{booking.user.name}</p>
             </div>
           </div>

@@ -65,7 +65,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
                   {eventType.description}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 {eventType.duration} min
               </div>

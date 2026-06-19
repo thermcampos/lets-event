@@ -91,7 +91,7 @@ export default async function AvailabilityPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Availability</h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Set your available hours for each day of the week
         </p>
       </div>
@@ -156,7 +156,7 @@ export default async function AvailabilityPage() {
           </CardHeader>
           <CardContent>
             {availability.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
+              <p className="text-muted-foreground text-center py-8">
                 No availability set yet. Add your first time slot!
               </p>
             ) : (
@@ -173,7 +173,7 @@ export default async function AvailabilityPage() {
                             ?.label
                         }
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {slot.startTime} - {slot.endTime}
                       </p>
                     </div>

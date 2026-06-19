@@ -32,7 +32,7 @@ export function GoogleCalendarCard({ isConnected }: { isConnected: boolean }) {
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               To automatically create calendar events and Google Meet links when
               someone books with you, connect your Google Calendar.
             </p>

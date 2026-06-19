@@ -34,7 +34,7 @@ export default async function EventTypesPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Event Types</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-muted-foreground mt-2">
             Create and manage your meeting types
           </p>
         </div>
@@ -51,7 +51,7 @@ export default async function EventTypesPage() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Clock className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No event types yet</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4 text-center max-w-md">
+            <p className="text-muted-foreground mb-4 text-center max-w-md">
               Create your first event type to start accepting bookings. Define
               the duration, description, and other details.
             </p>
@@ -81,7 +81,7 @@ export default async function EventTypesPage() {
                     <CardDescription>
                       {eventType.description || "No description"}
                     </CardDescription>
-                    <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         {eventType.duration} minutes

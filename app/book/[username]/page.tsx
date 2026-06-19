@@ -41,7 +41,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {user.name || username}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Select an event type below to schedule a meeting
           </p>
         </div>
@@ -49,7 +49,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
         {user.eventTypes.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 No available event types at the moment.
               </p>
             </CardContent>
@@ -71,7 +71,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         <span>{eventType.duration} minutes</span>

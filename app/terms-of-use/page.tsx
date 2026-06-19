@@ -18,7 +18,7 @@ export default function TermsOfUsePage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl">Terms of Use</CardTitle>
-            <p className="text-gray-500 text-sm">
+            <p className="text-muted-foreground text-sm">
               Last updated: February 28, 2026
             </p>
           </CardHeader>
@@ -211,7 +211,7 @@ export default function TermsOfUsePage() {
       </main>
 
       <footer className="bg-white border-t mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-gray-600 text-sm">
+        <div className="container mx-auto px-4 py-6 text-center text-muted-foreground text-sm">
           <div className="space-x-4">
             <Link href="/privacy-policy" className="hover:underline">
               Privacy Policy

@@ -70,7 +70,7 @@ export default async function SettingsPage() {
     <>
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-muted-foreground mt-2">
           Manage your account settings
         </p>
       </div>

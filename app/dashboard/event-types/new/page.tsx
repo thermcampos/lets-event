@@ -86,7 +86,7 @@ export default async function NewEventTypePage() {
             ← Back to Event Types
           </Link>
           <h1 className="text-3xl font-bold mt-4">Create Event Type</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-muted-foreground dark:text-gray-400 mt-2">
             Define a new type of meeting you want to offer
           </p>
         </div>
@@ -120,7 +120,7 @@ export default async function NewEventTypePage() {
                   pattern="[a-z0-9-]+"
                   title="Only lowercase letters, numbers, and hyphens"
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   This will be part of your booking URL
                 </p>
               </div>
@@ -160,7 +160,7 @@ export default async function NewEventTypePage() {
                   placeholder="Unlimited"
                   min="1"
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Leave empty for unlimited bookings
                 </p>
               </div>
@@ -178,7 +178,7 @@ export default async function NewEventTypePage() {
                   min="1"
                   required
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Minimum hours before event can start (e.g., 24 or 48)
                 </p>
               </div>
@@ -197,7 +197,7 @@ export default async function NewEventTypePage() {
                   max="365"
                   required
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Maximum days in advance for booking (e.g., 7 or 14)
                 </p>
               </div>

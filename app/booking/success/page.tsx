@@ -35,11 +35,11 @@ export default function BookingSuccessPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               A confirmation email has been sent to your email address with all
               the details.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               If you need to make any changes or cancel your booking, please
               contact the organizer directly.
             </p>

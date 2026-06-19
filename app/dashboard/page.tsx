@@ -52,7 +52,7 @@ export default async function DashboardPage() {
     <>
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-muted-foreground dark:text-gray-400 mt-2">
           Welcome back, {session.user.name?.split(" ")[0]}! 👋
         </p>
       </div>
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">Set Your Availability</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-gray-400">
                   Define when you&apos;re available for meetings
                 </p>
                 <Button variant="link" className="px-0" asChild>
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">Create Event Types</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-gray-400">
                   Set up different types of meetings you offer
                 </p>
                 <Button variant="link" className="px-0" asChild>
@@ -188,7 +188,7 @@ export default async function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">Share Your Link</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-gray-400">
                   Send your booking link to start receiving bookings
                 </p>
                 <Button variant="link" className="px-0">
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             {recentBookings.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No recent activity</p>
                 <p className="text-sm mt-2">

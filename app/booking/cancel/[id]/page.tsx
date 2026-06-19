@@ -67,7 +67,7 @@ export default function CancelPage({ params }: CancelPageProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 All attendees have been notified about the cancellation.
               </p>
               <Button onClick={() => router.push("/")}>Back to Home</Button>
@@ -92,7 +92,7 @@ export default function CancelPage({ params }: CancelPageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-center text-gray-600">
+            <p className="text-center text-muted-foreground">
               This action cannot be undone. All attendees will be notified about
               the cancellation.
             </p>

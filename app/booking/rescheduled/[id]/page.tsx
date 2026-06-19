@@ -34,7 +34,7 @@ export default async function BookingRescheduledPage({
           <CardTitle className="text-2xl">Booking Rescheduled!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="text-center text-gray-600">
+          <div className="text-center text-muted-foreground">
             <p>Your meeting has been successfully rescheduled.</p>
             <p className="mt-2 text-sm">
               A calendar invitation with the updated details has been sent to
@@ -44,11 +44,11 @@ export default async function BookingRescheduledPage({
 
           <div className="border-t pt-4 space-y-3">
             <div>
-              <p className="text-sm text-gray-500">Event Type</p>
+              <p className="text-sm text-muted-foreground">Event Type</p>
               <p className="font-medium">{booking.eventType.title}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">New Time</p>
+              <p className="text-sm text-muted-foreground">New Time</p>
               <p className="font-medium">
                 {new Date(booking.startTime).toLocaleString("en-US", {
                   dateStyle: "full",
@@ -57,18 +57,18 @@ export default async function BookingRescheduledPage({
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Duration</p>
+              <p className="text-sm text-muted-foreground">Duration</p>
               <p className="font-medium">
                 {booking.eventType.duration} minutes
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">With</p>
+              <p className="text-sm text-muted-foreground">With</p>
               <p className="font-medium">{booking.user.name}</p>
             </div>
             {booking.meetLink && (
               <div>
-                <p className="text-sm text-gray-500">Meeting Link</p>
+                <p className="text-sm text-muted-foreground">Meeting Link</p>
                 <Link
                   href={booking.meetLink}
                   target="_blank"

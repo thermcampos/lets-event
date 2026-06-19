@@ -98,7 +98,7 @@ export default function RegisterPage() {
                 title="Only lowercase letters, numbers, and hyphens"
                 required
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 This will be part of your booking URL
               </p>
             </div>
@@ -112,7 +112,7 @@ export default function RegisterPage() {
                 minLength={6}
                 required
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Must be at least 6 characters
               </p>
             </div>

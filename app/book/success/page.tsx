@@ -41,12 +41,12 @@ export default async function BookingSuccessPage({
           <CardContent className="space-y-4">
             {guestName && (
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <Mail className="w-5 h-5 text-gray-600 mt-0.5" />
+                <Mail className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="font-medium text-sm">Guest Details</p>
-                  <p className="text-sm text-gray-600">{guestName}</p>
+                  <p className="text-sm text-muted-foreground">{guestName}</p>
                   {guestEmail && (
-                    <p className="text-sm text-gray-600">{guestEmail}</p>
+                    <p className="text-sm text-muted-foreground">{guestEmail}</p>
                   )}
                 </div>
               </div>
@@ -54,10 +54,10 @@ export default async function BookingSuccessPage({
 
             {startTime && (
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-gray-600 mt-0.5" />
+                <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="font-medium text-sm">Meeting Time</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {format(new Date(startTime), "MMMM d, yyyy 'at' HH:mm")}
                   </p>
                 </div>
@@ -84,7 +84,7 @@ export default async function BookingSuccessPage({
             )}
 
             <div className="pt-4 border-t">
-              <p className="text-sm text-gray-600 text-center mb-4">
+              <p className="text-sm text-muted-foreground text-center mb-4">
                 A calendar invite with the meeting details has been sent to your
                 email address.
               </p>

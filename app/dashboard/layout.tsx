@@ -52,7 +52,7 @@ export default async function DashboardLayout({
               <ThemeToggle />
               <div className="text-sm">
                 <p className="font-medium">{session.user.name}</p>
-                <p className="text-gray-500 dark:text-gray-400">{session.user.email}</p>
+                <p className="text-muted-foreground">{session.user.email}</p>
               </div>
               <form action={handleSignOut}>
                 <Button variant="ghost" size="icon" type="submit">

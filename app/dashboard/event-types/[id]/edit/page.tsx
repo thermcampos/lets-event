@@ -106,7 +106,7 @@ export default async function EditEventTypePage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="py-8">
       <div className="max-w-2xl mx-auto px-4">
         <Link href="/dashboard/event-types">
           <Button variant="ghost" className="mb-4">
@@ -140,7 +140,7 @@ export default async function EditEventTypePage({
                   defaultValue={eventType.slug}
                   required
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   This will be part of your booking link
                 </p>
               </div>
@@ -180,7 +180,7 @@ export default async function EditEventTypePage({
                   placeholder="Unlimited"
                   min="1"
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Leave empty for unlimited bookings
                 </p>
               </div>
@@ -197,7 +197,7 @@ export default async function EditEventTypePage({
                   min="1"
                   required
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Minimum hours before event can start
                 </p>
               </div>
@@ -213,7 +213,7 @@ export default async function EditEventTypePage({
                   max="365"
                   required
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Maximum days in advance for booking
                 </p>
               </div>

@@ -130,7 +130,7 @@ export default async function PublicBookingPage({
                 <CardDescription>
                   {eventType.description || "Please provide your details"}
                 </CardDescription>
-                <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
+                <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <User className="h-4 w-4" />
                     {user.name}
@@ -223,7 +223,7 @@ export default async function PublicBookingPage({
                     </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
+                <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     {eventType.duration} minutes
@@ -247,10 +247,10 @@ export default async function PublicBookingPage({
               <CardContent>
                 <div className="text-center py-8">
                   <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Calendar integration coming soon...
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     For now, you can test the booking form by adding
                     ?date=2024-03-20&time=10:00 to the URL
                   </p>

@@ -53,13 +53,13 @@ export function SettingsForm({ user, updateSettings }: SettingsFormProps) {
           disabled
           className="bg-gray-100"
         />
-        <p className="text-xs text-gray-500">Email cannot be changed</p>
+        <p className="text-xs text-muted-foreground">Email cannot be changed</p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">event.me/book/</span>
+          <span className="text-sm text-muted-foreground">event.me/book/</span>
           <Input
             id="username"
             name="username"
@@ -70,7 +70,7 @@ export function SettingsForm({ user, updateSettings }: SettingsFormProps) {
             disabled={isPending}
           />
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Your public booking URL will be: event.me/book/
           {user?.username || "your-username"}
         </p>
