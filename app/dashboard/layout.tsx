@@ -2,6 +2,7 @@ import { Calendar, LogOut } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 async function handleSignOut() {
   "use server";
@@ -26,7 +27,7 @@ export default async function DashboardLayout({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
               <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-indigo-600" />
+                <Calendar className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
                 <span className="ml-2 text-xl font-bold">Event.me</span>
               </div>
               <nav className="flex gap-4">
@@ -48,9 +49,10 @@ export default async function DashboardLayout({
               </nav>
             </div>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <div className="text-sm">
                 <p className="font-medium">{session.user.name}</p>
-                <p className="text-gray-500">{session.user.email}</p>
+                <p className="text-gray-500 dark:text-gray-400">{session.user.email}</p>
               </div>
               <form action={handleSignOut}>
                 <Button variant="ghost" size="icon" type="submit">
