@@ -1,7 +1,7 @@
 "use client";
 
 import type { EventType } from "@prisma/client";
-import { addMinutes, format, startOfDay } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -90,9 +90,7 @@ export function ProposalModal({
     }
   };
 
-  const minDate = startOfDay(
-    addMinutes(new Date(), eventType.minimumNoticeHours * 60),
-  );
+  const today = startOfDay(new Date());
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -125,7 +123,7 @@ export function ProposalModal({
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  disabled={(date) => date < minDate}
+                  disabled={(date) => date < today}
                   className="rounded-md border"
                 />
               </div>
