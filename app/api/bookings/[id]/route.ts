@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getGoogleCalendarClient } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingStatusChangedEmail } from "@/lib/resend";
 
@@ -45,6 +46,20 @@ export async function PATCH(
 
     if (!booking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    // Cancel Google Calendar event when booking is cancelled
+    if (status === "cancelled" && booking.googleCalendarEventId) {
+      try {
+        const calendar = await getGoogleCalendarClient(booking.userId);
+        await calendar.events.delete({
+          calendarId: "primary",
+          eventId: booking.googleCalendarEventId,
+          sendUpdates: "all",
+        });
+      } catch (error) {
+        console.error("Failed to delete Google Calendar event:", error);
+      }
     }
 
     // Update booking
