@@ -3,7 +3,7 @@
 import type { Availability, EventType } from "@prisma/client";
 import { addMinutes, format, startOfDay } from "date-fns";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ProposalModal } from "@/components/proposal-modal";
 import { Button } from "@/components/ui/button";
@@ -34,12 +34,35 @@ export function BookingForm({ eventType }: BookingFormProps) {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [proposalOpen, setProposalOpen] = useState(false);
+  const [fullWeekRanges, setFullWeekRanges] = useState<
+    { from: Date; to: Date }[]
+  >([]);
+
+  useEffect(() => {
+    if (!eventType.maxBookingsPerWeek) return;
+    fetch(`/api/bookings/week-status?eventTypeId=${eventType.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.fullWeeks) {
+          setFullWeekRanges(
+            data.fullWeeks.map((w: { from: string; to: string }) => ({
+              from: new Date(w.from),
+              to: new Date(w.to),
+            })),
+          );
+        }
+      })
+      .catch(() => {});
+  }, [eventType.id, eventType.maxBookingsPerWeek]);
+
+  const isInFullWeek = (date: Date) =>
+    fullWeekRanges.some((r) => date >= r.from && date <= r.to);
 
   const handleDateSelect = async (date: Date | undefined) => {
     setSelectedDate(date);
     setSelectedSlot(null);
 
-    if (!date) {
+    if (!date || isInFullWeek(date)) {
       setAvailableSlots([]);
       return;
     }
@@ -135,12 +158,15 @@ export function BookingForm({ eventType }: BookingFormProps) {
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
-          disabled={(date) =>
-            date <
-            startOfDay(
-              addMinutes(new Date(), eventType.minimumNoticeHours * 60),
-            )
-          }
+          disabled={[
+            (date) =>
+              date <
+              startOfDay(
+                addMinutes(new Date(), eventType.minimumNoticeHours * 60),
+              ),
+            ...fullWeekRanges,
+          ]}
+          showOutsideDays={false}
           className="rounded-md border"
         />
         <div className="mt-4 text-center">
