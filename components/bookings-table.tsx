@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button";
 
 interface BookingsTableProps {
   bookings: (Booking & { eventType: EventType })[];
+  emptyMessage?: string;
 }
 
 export function BookingsTable({
   bookings: initialBookings,
+  emptyMessage = "No bookings yet",
 }: BookingsTableProps) {
   const [bookings, setBookings] = useState(initialBookings);
   const [cancelling, setCancelling] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function BookingsTable({
   if (bookings.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>No bookings yet</p>
+        <p>{emptyMessage}</p>
       </div>
     );
   }
@@ -70,7 +72,8 @@ export function BookingsTable({
                 variant={
                   booking.status === "confirmed"
                     ? "default"
-                    : booking.status === "cancelled"
+                    : booking.status === "cancelled" ||
+                        booking.status === "declined"
                       ? "destructive"
                       : "secondary"
                 }

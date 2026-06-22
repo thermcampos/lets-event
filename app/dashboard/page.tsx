@@ -224,9 +224,9 @@ export default async function DashboardPage() {
                     <div className="flex-shrink-0 mt-1">
                       <div
                         className={`h-2 w-2 rounded-full ${
-                          booking.status === "CONFIRMED"
+                          booking.status === "confirmed"
                             ? "bg-green-500"
-                            : booking.status === "CANCELLED"
+                            : booking.status === "cancelled"
                               ? "bg-red-500"
                               : "bg-yellow-500"
                         }`}
@@ -249,9 +249,9 @@ export default async function DashboardPage() {
                     <div className="flex-shrink-0">
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
-                          booking.status === "CONFIRMED"
+                          booking.status === "confirmed"
                             ? "bg-green-100 text-green-700"
-                            : booking.status === "CANCELLED"
+                            : booking.status === "cancelled"
                               ? "bg-red-100 text-red-700"
                               : "bg-yellow-100 text-yellow-700"
                         }`}

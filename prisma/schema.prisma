@@ -6,6 +6,14 @@ datasource db {
   provider = "postgresql"
 }
 
+enum BookingStatus {
+  proposed
+  confirmed
+  declined
+  cancelled
+  completed
+}
+
 // NextAuth.js Models
 model Account {
   id                String  @id @default(cuid())
@@ -57,7 +65,7 @@ model User {
   timezone      String         @default("UTC")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  
+
   accounts      Account[]
   sessions      Session[]
   availability  Availability[]
@@ -74,7 +82,7 @@ model Availability {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([userId])
 }
 
@@ -87,36 +95,39 @@ model EventType {
   duration              Int       // minutes
   color                 String?
   active                Boolean   @default(true)
-  maxBookingsPerWeek    Int?      // null = unlimited
-  minimumNoticeHours    Int       @default(24) // minimum hours before event can start
-  maximumNoticeDays     Int       @default(14) // maximum days in future for booking
+  maxBookingsPerWeek    Int?
+  minimumNoticeHours    Int       @default(24)
+  maximumNoticeDays     Int       @default(14)
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings              Booking[]
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  
+
   @@index([userId])
   @@index([slug])
 }
 
 model Booking {
-  id                  String    @id @default(cuid())
-  eventTypeId         String
-  userId              String
-  guestName           String
-  guestEmail          String
-  guestNotes          String?
-  startTime           DateTime
-  endTime             DateTime
-  status              String    @default("confirmed") // confirmed, cancelled, completed
+  id                    String        @id @default(cuid())
+  eventTypeId           String
+  userId                String
+  guestName             String
+  guestEmail            String
+  guestNotes            String?
+  proposalMessage       String?
+  startTime             DateTime
+  endTime               DateTime
+  status                BookingStatus @default(confirmed)
+  respondedAt           DateTime?
   googleCalendarEventId String?
-  meetLink            String?
-  eventType           EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  
+  meetLink              String?
+  eventType             EventType     @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
   @@index([userId])
   @@index([eventTypeId])
   @@index([startTime])
+  @@index([status])
 }

@@ -55,7 +55,8 @@ export function getAvailableSlots(
 
       // Check if slot is available (not booked)
       const isBooked = existingBookings.some((booking) => {
-        if (booking.status === "cancelled") return false;
+        if (booking.status === "cancelled" || booking.status === "declined")
+          return false;
 
         return (
           ((isAfter(currentSlot, booking.startTime) ||

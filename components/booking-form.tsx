@@ -5,6 +5,7 @@ import { addMinutes, format, startOfDay } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ProposalModal } from "@/components/proposal-modal";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ export function BookingForm({ eventType }: BookingFormProps) {
   >([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [proposalOpen, setProposalOpen] = useState(false);
 
   const handleDateSelect = async (date: Date | undefined) => {
     setSelectedDate(date);
@@ -120,8 +122,14 @@ export function BookingForm({ eventType }: BookingFormProps) {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      <div>
+    <>
+      <ProposalModal
+        open={proposalOpen}
+        onOpenChange={setProposalOpen}
+        eventType={eventType}
+      />
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
         <h3 className="font-semibold mb-4">Select a date</h3>
         <Calendar
           mode="single"
@@ -135,9 +143,19 @@ export function BookingForm({ eventType }: BookingFormProps) {
           }
           className="rounded-md border"
         />
-      </div>
+        <div className="mt-4 text-center">
+          <Button
+            type="button"
+            variant="link"
+            className="text-sm text-muted-foreground"
+            onClick={() => setProposalOpen(true)}
+          >
+            Can&apos;t find a time that works?
+          </Button>
+        </div>
+        </div>
 
-      <div>
+        <div>
         {selectedDate && (
           <>
             <h3 className="font-semibold mb-4">
@@ -213,5 +231,6 @@ export function BookingForm({ eventType }: BookingFormProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

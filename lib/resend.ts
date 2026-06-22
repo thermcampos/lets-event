@@ -248,6 +248,153 @@ export async function sendBookingRescheduledEmail(
   });
 }
 
+export async function sendProposalReceivedEmail(params: {
+  to: string;
+  guestName: string;
+  guestEmail: string;
+  eventTitle: string;
+  startTime: Date;
+  endTime: Date;
+  proposalMessage?: string | null;
+  timezone?: string;
+}) {
+  const {
+    to,
+    guestName,
+    guestEmail,
+    eventTitle,
+    startTime,
+    endTime,
+    proposalMessage,
+    timezone,
+  } = params;
+
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const approveUrl = `${baseUrl}/dashboard/bookings`;
+
+  const safeEventTitle = escapeHtml(eventTitle);
+  const safeGuestName = escapeHtml(guestName);
+  const safeGuestEmail = escapeHtml(guestEmail);
+  const dateStr = escapeHtml(formatDate(startTime, timezone));
+  const startStr = escapeHtml(formatTime(startTime, timezone));
+  const endStr = escapeHtml(formatTime(endTime, timezone));
+  const tzStr = escapeHtml(formatTz(startTime, timezone));
+
+  const body = `
+    <h1 style="margin:0 0 6px;font-size:20px;font-weight:600;color:#09090b;">New Booking Proposal</h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#71717a;">${safeGuestName} has proposed a custom date/time for <strong>${safeEventTitle}</strong>.</p>
+
+    <div style="background:#f4f4f5;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#09090b;">${safeEventTitle}</p>
+      <p style="margin:0 0 2px;font-size:13px;color:#71717a;">Proposed: ${dateStr}</p>
+      <p style="margin:0;font-size:13px;color:#71717a;">${startStr} &ndash; ${endStr} (${tzStr})</p>
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${detailRow("Guest", safeGuestName)}
+      ${detailRow("Email", `<a href="mailto:${safeGuestEmail}" style="color:#4f46e5;text-decoration:none;">${safeGuestEmail}</a>`)}
+      ${proposalMessage ? detailRow("Message", escapeHtml(proposalMessage)) : ""}
+    </table>
+
+    <div style="margin-top:24px;text-align:center;">
+      <a href="${approveUrl}" style="display:inline-block;background:#4f46e5;color:#fff;font-size:14px;font-weight:600;padding:10px 24px;border-radius:6px;text-decoration:none;">Review Proposal</a>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject: `New booking proposal: ${eventTitle} with ${guestName}`,
+    html: wrapEmail("#4f46e5", body),
+  });
+}
+
+export async function sendProposalApprovedEmail(params: {
+  to: string;
+  guestName: string;
+  eventTitle: string;
+  startTime: Date;
+  endTime: Date;
+  meetLink?: string | null;
+  timezone?: string;
+}) {
+  const { to, guestName, eventTitle, startTime, endTime, meetLink, timezone } =
+    params;
+
+  const safeEventTitle = escapeHtml(eventTitle);
+  const safeGuestName = escapeHtml(guestName);
+  const dateStr = escapeHtml(formatDate(startTime, timezone));
+  const startStr = escapeHtml(formatTime(startTime, timezone));
+  const endStr = escapeHtml(formatTime(endTime, timezone));
+  const tzStr = escapeHtml(formatTz(startTime, timezone));
+
+  const body = `
+    <h1 style="margin:0 0 6px;font-size:20px;font-weight:600;color:#09090b;">Proposal Approved!</h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#71717a;">Your booking proposal for <strong>${safeEventTitle}</strong> has been approved.</p>
+
+    <div style="background:#f4f4f5;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#09090b;">${safeEventTitle}</p>
+      <p style="margin:0 0 2px;font-size:13px;color:#71717a;">${dateStr}</p>
+      <p style="margin:0;font-size:13px;color:#71717a;">${startStr} &ndash; ${endStr} (${tzStr})</p>
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${detailRow("Guest", safeGuestName)}
+      ${meetLink ? detailRow("Meeting Link", `<a href="${escapeHtml(meetLink)}" style="color:#4f46e5;text-decoration:none;">Join Meeting</a>`) : ""}
+    </table>
+  `;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject: `Your booking proposal was approved: ${eventTitle}`,
+    html: wrapEmail("#10b981", body),
+  });
+}
+
+export async function sendProposalDeclinedEmail(params: {
+  to: string;
+  guestName: string;
+  eventTitle: string;
+  startTime: Date;
+  endTime: Date;
+  reason?: string | null;
+  timezone?: string;
+}) {
+  const { to, guestName, eventTitle, startTime, endTime, reason, timezone } =
+    params;
+
+  const safeEventTitle = escapeHtml(eventTitle);
+  const safeGuestName = escapeHtml(guestName);
+  const dateStr = escapeHtml(formatDate(startTime, timezone));
+  const startStr = escapeHtml(formatTime(startTime, timezone));
+  const endStr = escapeHtml(formatTime(endTime, timezone));
+  const tzStr = escapeHtml(formatTz(startTime, timezone));
+
+  const body = `
+    <h1 style="margin:0 0 6px;font-size:20px;font-weight:600;color:#09090b;">Proposal Declined</h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#71717a;">Your booking proposal for <strong>${safeEventTitle}</strong> was not approved.</p>
+
+    <div style="background:#f4f4f5;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#09090b;">${safeEventTitle}</p>
+      <p style="margin:0 0 2px;font-size:13px;color:#71717a;">${dateStr}</p>
+      <p style="margin:0;font-size:13px;color:#71717a;">${startStr} &ndash; ${endStr} (${tzStr})</p>
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${detailRow("Guest", safeGuestName)}
+      ${reason ? detailRow("Reason", escapeHtml(reason)) : ""}
+    </table>
+  `;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject: `Your booking proposal was declined: ${eventTitle}`,
+    html: wrapEmail("#ef4444", body),
+  });
+}
+
 export async function sendBookingStatusChangedEmail(
   params: BookingEmailParams & { status: string },
 ) {
