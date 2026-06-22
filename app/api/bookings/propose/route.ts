@@ -1,4 +1,4 @@
-import { addHours, addMinutes, isAfter } from "date-fns";
+import { addMinutes, isAfter } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma.server";
@@ -68,17 +68,6 @@ export async function POST(request: NextRequest) {
     if (!isAfter(startTime, now)) {
       return NextResponse.json(
         { error: "Proposed time must be in the future" },
-        { status: 400 },
-      );
-    }
-
-    // Honor minimumNoticeHours (can't propose in the notice window)
-    const minNoticeTime = addHours(now, eventType.minimumNoticeHours);
-    if (!isAfter(startTime, minNoticeTime)) {
-      return NextResponse.json(
-        {
-          error: `Proposal must be at least ${eventType.minimumNoticeHours} hours in advance`,
-        },
         { status: 400 },
       );
     }
