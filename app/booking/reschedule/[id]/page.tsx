@@ -2,7 +2,7 @@
 
 import { format, startOfDay } from "date-fns";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,45 +23,57 @@ interface Slot {
   end: Date;
 }
 
+interface BookingDetails {
+  eventTypeId: string;
+  eventType: {
+    duration: number;
+    title: string;
+  };
+}
+
 export default function ReschedulePage({ params }: ReschedulePageProps) {
   const router = useRouter();
   const [bookingId, setBookingId] = useState<string>("");
+  const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Get booking ID from params
-  useState(() => {
-    params.then((p) => setBookingId(p.id));
-  });
+  useEffect(() => {
+    params.then((p) => {
+      setBookingId(p.id);
+      fetch(`/api/bookings/${p.id}`)
+        .then((res) => res.json())
+        .then((data) => setBooking(data))
+        .catch(() => toast.error("Failed to load booking details"));
+    });
+  }, [params]);
 
   const handleDateSelect = async (date: Date | undefined) => {
     setSelectedDate(date);
     setSelectedSlot(null);
 
-    if (!date) {
+    if (!date || !booking) {
       setAvailableSlots([]);
       return;
     }
 
     setLoadingSlots(true);
     try {
-      // For now, generate mock slots - in production this should fetch from API
-      const slots: Slot[] = [];
-      const baseDate = new Date(date);
-      baseDate.setHours(9, 0, 0, 0);
-
-      for (let i = 0; i < 8; i++) {
-        const start = new Date(baseDate);
-        start.setHours(9 + i);
-        const end = new Date(start);
-        end.setMinutes(start.getMinutes() + 30);
-        slots.push({ start, end });
-      }
-
-      setAvailableSlots(slots);
+      const dateStr = format(date, "yyyy-MM-dd");
+      const res = await fetch(
+        `/api/slots?eventTypeId=${booking.eventTypeId}&date=${dateStr}&bookingId=${bookingId}`,
+      );
+      if (!res.ok) throw new Error("Failed to fetch slots");
+      const data = await res.json();
+      setAvailableSlots(
+        data.slots.map((s: { start: string; end: string }) => ({
+          start: new Date(s.start),
+          end: new Date(s.end),
+        })),
+      );
     } catch (_error) {
       toast.error("Failed to load available slots");
       setAvailableSlots([]);
@@ -115,6 +127,7 @@ export default function ReschedulePage({ params }: ReschedulePageProps) {
             <CardTitle>Reschedule Booking</CardTitle>
             <CardDescription>
               Select a new date and time for your meeting
+              {booking && ` (${booking.eventType.duration} min)`}
             </CardDescription>
           </CardHeader>
           <CardContent>

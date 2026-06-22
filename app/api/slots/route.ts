@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const eventTypeId = searchParams.get("eventTypeId");
     const dateStr = searchParams.get("date");
+    const excludeBookingId = searchParams.get("bookingId") ?? undefined;
 
     if (!eventTypeId || !dateStr) {
       return NextResponse.json(
@@ -50,6 +51,30 @@ export async function GET(request: NextRequest) {
       .toISOString()
       .slice(0, 10);
     const endOfDate = fromZonedTime(`${nextDateStr}T00:00:00`, timezone);
+
+    // Check weekly limit before computing slots
+    if (eventType.maxBookingsPerWeek !== null) {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const dateObj = new Date(Date.UTC(year, month - 1, day));
+      const weekStart = new Date(dateObj);
+      weekStart.setUTCDate(dateObj.getUTCDate() - dateObj.getUTCDay());
+      weekStart.setUTCHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
+
+      const weekBookings = await prisma.booking.count({
+        where: {
+          eventTypeId: eventType.id,
+          startTime: { gte: weekStart, lt: weekEnd },
+          status: { not: "cancelled" },
+          ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
+        },
+      });
+
+      if (weekBookings >= eventType.maxBookingsPerWeek) {
+        return NextResponse.json({ slots: [] });
+      }
+    }
 
     const existingBookings = await prisma.booking.findMany({
       where: {

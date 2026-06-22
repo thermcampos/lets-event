@@ -4,6 +4,43 @@ import { getGoogleCalendarClient } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingStatusChangedEmail } from "@/lib/resend";
 
+export async function GET(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await context.params;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        eventTypeId: true,
+        eventType: {
+          select: {
+            id: true,
+            duration: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(booking);
+  } catch (error) {
+    console.error("Booking fetch error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },

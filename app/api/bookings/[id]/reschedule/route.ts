@@ -39,6 +39,31 @@ export async function POST(
     }
 
     const newStartTime = new Date(startTime);
+
+    // Check weekly limit for target week, excluding the booking being moved
+    if (booking.eventType.maxBookingsPerWeek !== null) {
+      const weekStart = new Date(newStartTime);
+      weekStart.setUTCDate(newStartTime.getUTCDate() - newStartTime.getUTCDay());
+      weekStart.setUTCHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
+
+      const weekBookings = await prisma.booking.count({
+        where: {
+          eventTypeId: booking.eventTypeId,
+          id: { not: id },
+          startTime: { gte: weekStart, lt: weekEnd },
+          status: { not: "cancelled" },
+        },
+      });
+
+      if (weekBookings >= booking.eventType.maxBookingsPerWeek) {
+        return NextResponse.json(
+          { error: "Maximum bookings per week reached for the selected week" },
+          { status: 400 },
+        );
+      }
+    }
     const newEndTime = new Date(endTime);
 
     // Update Google Calendar event
