@@ -2,7 +2,7 @@
 
 import type { Booking, EventType } from "@prisma/client";
 import { format } from "date-fns";
-import { Check, X } from "lucide-react";
+import { Check, Clock, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -148,6 +148,14 @@ export function BookingsTable({
                   {completing === booking.id ? "Completing..." : "Mark Complete"}
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/booking/reschedule/${booking.id}`)}
+              >
+                <Clock className="w-4 h-4 mr-1" />
+                Reschedule
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
