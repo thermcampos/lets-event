@@ -3,7 +3,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_APIKEY);
 
-const EMAIL_FROM = "onboarding@resend.dev";
+const EMAIL_FROM = "no-reply@lets-event.online";
 
 interface BookingEmailParams {
   to: string;
@@ -392,6 +392,42 @@ export async function sendProposalDeclinedEmail(params: {
     to,
     subject: `Your booking proposal was declined: ${eventTitle}`,
     html: wrapEmail("#ef4444", body),
+  });
+}
+
+export async function sendBookingCompletedGuestEmail(params: {
+  to: string;
+  guestName: string;
+  eventTitle: string;
+  startTime: Date;
+  endTime: Date;
+  timezone?: string;
+}) {
+  const { to, guestName, eventTitle, startTime, endTime, timezone } = params;
+
+  const safeEventTitle = escapeHtml(eventTitle);
+  const safeGuestName = escapeHtml(guestName);
+  const dateStr = escapeHtml(formatDate(startTime, timezone));
+  const startStr = escapeHtml(formatTime(startTime, timezone));
+  const endStr = escapeHtml(formatTime(endTime, timezone));
+  const tzStr = escapeHtml(formatTz(startTime, timezone));
+
+  const body = `
+    <h1 style="margin:0 0 6px;font-size:20px;font-weight:600;color:#09090b;">Meeting Completed</h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#71717a;">Hi ${safeGuestName}, your meeting has been marked as completed.</p>
+
+    <div style="background:#f0fdf4;border-radius:8px;padding:16px 20px;margin-bottom:24px;border:1px solid #bbf7d0;">
+      <p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#09090b;">${safeEventTitle}</p>
+      <p style="margin:0 0 2px;font-size:13px;color:#71717a;">${dateStr}</p>
+      <p style="margin:0;font-size:13px;color:#71717a;">${startStr} &ndash; ${endStr} (${tzStr})</p>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject: `Meeting Completed: ${eventTitle}`,
+    html: wrapEmail("#10b981", body),
   });
 }
 

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getGoogleCalendarClient } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
-import { sendBookingStatusChangedEmail } from "@/lib/resend";
+import { sendBookingCompletedGuestEmail, sendBookingStatusChangedEmail } from "@/lib/resend";
 
 export async function GET(
   _request: NextRequest,
@@ -110,8 +110,7 @@ export async function PATCH(
 
     // Send email notification
     try {
-      await sendBookingStatusChangedEmail({
-        to: session.user.email,
+      const emailParams = {
         guestName: booking.guestName,
         guestEmail: booking.guestEmail,
         eventTitle: updatedBooking.eventType.title,
@@ -119,7 +118,20 @@ export async function PATCH(
         endTime: updatedBooking.endTime,
         status,
         timezone: user.timezone,
-      });
+      };
+
+      await sendBookingStatusChangedEmail({ to: session.user.email, ...emailParams });
+
+      if (status === "completed") {
+        await sendBookingCompletedGuestEmail({
+          to: booking.guestEmail,
+          guestName: booking.guestName,
+          eventTitle: updatedBooking.eventType.title,
+          startTime: updatedBooking.startTime,
+          endTime: updatedBooking.endTime,
+          timezone: user.timezone,
+        });
+      }
     } catch (emailError) {
       console.error("Email notification error:", emailError);
     }
