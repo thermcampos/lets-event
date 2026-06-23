@@ -3,6 +3,7 @@
 import type { Booking, EventType } from "@prisma/client";
 import { format } from "date-fns";
 import { Check, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ export function BookingsTable({
   bookings: initialBookings,
   emptyMessage = "No bookings yet",
 }: BookingsTableProps) {
+  const router = useRouter();
   const [bookings, setBookings] = useState(initialBookings);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [completing, setCompleting] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export function BookingsTable({
       }
 
       setBookings(bookings.filter((b) => b.id !== bookingId));
+      router.refresh();
 
       toast.success("Meeting marked as completed");
     } catch (_error) {

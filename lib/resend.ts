@@ -3,7 +3,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_APIKEY);
 
-const EMAIL_FROM = "no-reply@lets-event.online";
+const EMAIL_FROM = "Lets Event <no-reply@lets-event.online>";
 
 interface BookingEmailParams {
   to: string;
