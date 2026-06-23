@@ -2,7 +2,7 @@
 
 import type { Booking, EventType } from "@prisma/client";
 import { format } from "date-fns";
-import { X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ export function BookingsTable({
 }: BookingsTableProps) {
   const [bookings, setBookings] = useState(initialBookings);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [completing, setCompleting] = useState<string | null>(null);
 
   const handleCancel = async (bookingId: string) => {
     setCancelling(bookingId);
@@ -50,6 +51,32 @@ export function BookingsTable({
     }
   };
 
+  const handleComplete = async (bookingId: string) => {
+    setCompleting(bookingId);
+
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "completed" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to complete booking");
+      }
+
+      setBookings(bookings.filter((b) => b.id !== bookingId));
+
+      toast.success("Meeting marked as completed");
+    } catch (_error) {
+      toast.error("Failed to mark meeting as completed");
+    } finally {
+      setCompleting(null);
+    }
+  };
+
   if (bookings.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -77,6 +104,11 @@ export function BookingsTable({
                       ? "destructive"
                       : "secondary"
                 }
+                className={
+                  booking.status === "completed"
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border-transparent"
+                    : undefined
+                }
               >
                 {booking.status}
               </Badge>
@@ -101,15 +133,28 @@ export function BookingsTable({
           </div>
 
           {booking.status === "confirmed" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCancel(booking.id)}
-              disabled={cancelling === booking.id}
-            >
-              <X className="w-4 h-4 mr-1" />
-              {cancelling === booking.id ? "Cancelling..." : "Cancel"}
-            </Button>
+            <div className="flex gap-2">
+              {new Date(booking.endTime) < new Date() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleComplete(booking.id)}
+                  disabled={completing === booking.id}
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {completing === booking.id ? "Completing..." : "Mark Complete"}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleCancel(booking.id)}
+                disabled={cancelling === booking.id}
+              >
+                <X className="w-4 h-4 mr-1" />
+                {cancelling === booking.id ? "Cancelling..." : "Cancel"}
+              </Button>
+            </div>
           )}
         </div>
       ))}
