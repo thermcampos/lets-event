@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
           <CardHeader>
             <CardTitle className="text-3xl">Privacy Policy</CardTitle>
             <p className="text-muted-foreground text-sm">
-              Last updated: June 19, 2026
+              Last updated: June 24, 2026
             </p>
           </CardHeader>
           <CardContent className="prose max-w-none space-y-6">
@@ -128,10 +128,28 @@ export default function PrivacyPolicyPage() {
                 <div>
                   <h3 className="font-semibold text-foreground">Google</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    If you connect your Google Calendar, we store an OAuth
-                    access token to read and write calendar events on your
-                    behalf. We request only the minimum required scopes. You can
-                    revoke this access at any time from your{" "}
+                    If you connect your Google Calendar, we request OAuth access
+                    to read and write calendar events on your behalf
+                    (specifically, the{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      calendar.events
+                    </code>{" "}
+                    scope). We store the resulting OAuth tokens in our database
+                    solely to perform calendar operations you initiate within
+                    Event.me.
+                  </p>
+                  <p className="text-muted-foreground text-sm mt-2">
+                    <strong>
+                      We do not share, sell, transfer, or disclose your Google
+                      user data — including your Google Calendar events, profile
+                      information, or OAuth tokens — to any third party.
+                    </strong>{" "}
+                    Google user data is used exclusively to operate the calendar
+                    sync feature. It is never used for advertising, profiling,
+                    or any purpose beyond what you explicitly request.
+                  </p>
+                  <p className="text-muted-foreground text-sm mt-2">
+                    You can revoke this access at any time from your{" "}
                     <a
                       href="https://myaccount.google.com/permissions"
                       className="underline"
@@ -139,8 +157,8 @@ export default function PrivacyPolicyPage() {
                       rel="noopener noreferrer"
                     >
                       Google account permissions
-                    </a>
-                    . Refer to{" "}
+                    </a>{" "}
+                    or from your Event.me account settings. Refer to{" "}
                     <a
                       href="https://policies.google.com/privacy"
                       className="underline"
