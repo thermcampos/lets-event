@@ -121,7 +121,7 @@ export default function ReschedulePage({ params }: ReschedulePageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-full sm:max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Reschedule Booking</CardTitle>
@@ -158,7 +158,7 @@ export default function ReschedulePage({ params }: ReschedulePageProps) {
                       </p>
                     ) : (
                       <>
-                        <div className="space-y-2 mb-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 mb-6">
                           {availableSlots.map((slot) => (
                             <Button
                               key={slot.start.toISOString()}

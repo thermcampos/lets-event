@@ -31,14 +31,14 @@ export default async function EventTypesPage() {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Event Types</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Event Types</h1>
           <p className="text-muted-foreground mt-2">
             Create and manage your meeting types
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/event-types/new">
             <Plus className="h-4 w-4 mr-2" />
             New Event Type
@@ -81,7 +81,7 @@ export default async function EventTypesPage() {
                     <CardDescription>
                       {eventType.description || "No description"}
                     </CardDescription>
-                    <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         {eventType.duration} minutes
@@ -116,10 +116,11 @@ export default async function EventTypesPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="icon" asChild>
                       <Link
                         href={`/dashboard/event-types/${eventType.id}/edit`}
+                        aria-label="Edit"
                       >
                         <Edit className="h-4 w-4" />
                       </Link>
@@ -134,8 +135,9 @@ export default async function EventTypesPage() {
                     >
                       <Button
                         variant="outline"
-                        size="sm"
+                        size="icon"
                         type="submit"
+                        aria-label="Delete"
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />

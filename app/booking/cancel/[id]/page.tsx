@@ -96,11 +96,12 @@ export default function CancelPage({ params }: CancelPageProps) {
               This action cannot be undone. All attendees will be notified about
               the cancellation.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={submitting}
+                className="w-full sm:w-auto"
               >
                 Go Back
               </Button>
@@ -108,6 +109,7 @@ export default function CancelPage({ params }: CancelPageProps) {
                 variant="destructive"
                 onClick={handleCancel}
                 disabled={submitting}
+                className="w-full sm:w-auto"
               >
                 {submitting ? "Cancelling..." : "Yes, Cancel Booking"}
               </Button>

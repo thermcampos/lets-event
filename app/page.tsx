@@ -22,7 +22,7 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-6xl md:text-7xl">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white md:text-6xl lg:text-7xl">
             Simple Scheduling
             <span className="block text-indigo-600">Made Easy</span>
           </h1>
@@ -31,14 +31,14 @@ export default function Home() {
             slots. No complexity, no fuss - just clean, efficient appointment
             scheduling.
           </p>
-          <div className="mt-10 flex justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="text-lg px-8 py-6">
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4 px-4 sm:px-0">
+            <Link href="/register" className="w-full sm:w-auto">
+              <Button size="lg" className="text-lg px-8 py-6 w-full sm:w-auto">
                 Get Started
               </Button>
             </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+            <Link href="/login" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 w-full sm:w-auto">
                 Sign In
               </Button>
             </Link>
