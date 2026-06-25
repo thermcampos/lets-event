@@ -93,7 +93,7 @@ export function BookingsTable({
       {bookings.map((booking) => (
         <div
           key={booking.id}
-          className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent"
+          className="flex flex-col sm:flex-row items-start justify-between p-4 border rounded-lg hover:bg-accent gap-4"
         >
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -136,34 +136,35 @@ export function BookingsTable({
           </div>
 
           {booking.status === "confirmed" && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               {new Date(booking.endTime) < new Date() && (
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => handleComplete(booking.id)}
                   disabled={completing === booking.id}
+                  className="flex-1 sm:flex-none"
                 >
-                  <Check className="w-4 h-4 mr-1" />
-                  {completing === booking.id ? "Completing..." : "Mark Complete"}
+                  <Check className="w-4 h-4 shrink-0" />
+                  <span className="ml-1">{completing === booking.id ? "Completing..." : "Complete"}</span>
                 </Button>
               )}
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => router.push(`/booking/reschedule/${booking.id}`)}
+                className="flex-1 sm:flex-none"
               >
-                <Clock className="w-4 h-4 mr-1" />
-                Reschedule
+                <Clock className="w-4 h-4 shrink-0" />
+                <span className="ml-1 hidden sm:inline">Reschedule</span>
+                <span className="ml-1 sm:hidden">Reschedule</span>
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => handleCancel(booking.id)}
                 disabled={cancelling === booking.id}
+                className="flex-1 sm:flex-none"
               >
-                <X className="w-4 h-4 mr-1" />
-                {cancelling === booking.id ? "Cancelling..." : "Cancel"}
+                <X className="w-4 h-4 shrink-0" />
+                <span className="ml-1">{cancelling === booking.id ? "Cancelling..." : "Cancel"}</span>
               </Button>
             </div>
           )}
