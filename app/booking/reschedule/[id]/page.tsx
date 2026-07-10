@@ -151,7 +151,9 @@ export default function ReschedulePage({ params }: ReschedulePageProps) {
                     </h3>
 
                     {loadingSlots ? (
-                      <p className="text-sm text-muted-foreground">Loading slots...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Loading slots...
+                      </p>
                     ) : availableSlots.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
                         No available slots for this date

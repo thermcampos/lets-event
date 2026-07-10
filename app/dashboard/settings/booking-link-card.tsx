@@ -24,7 +24,9 @@ export function BookingLinkCard({ username }: { username: string }) {
   return (
     <Card className="mb-6 bg-indigo-50 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800">
       <CardHeader>
-        <CardTitle className="text-indigo-900 dark:text-indigo-100">Your Booking Link</CardTitle>
+        <CardTitle className="text-indigo-900 dark:text-indigo-100">
+          Your Booking Link
+        </CardTitle>
         <CardDescription className="text-indigo-700 dark:text-indigo-300">
           Share this link with people to allow them to book meetings with you
         </CardDescription>

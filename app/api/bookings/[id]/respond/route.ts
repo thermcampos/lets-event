@@ -156,7 +156,10 @@ export async function POST(
         });
       }
     } catch (calendarError) {
-      console.error("Google Calendar error on proposal approval:", calendarError);
+      console.error(
+        "Google Calendar error on proposal approval:",
+        calendarError,
+      );
     }
 
     try {

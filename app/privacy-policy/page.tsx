@@ -34,9 +34,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">
-                2. Data We Store
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">2. Data We Store</h2>
               <p className="text-muted-foreground mb-2">
                 When you create an account, we store:
               </p>
@@ -138,8 +136,8 @@ export default function PrivacyPolicyPage() {
                     </code>{" "}
                     scopes to identify your account and display your name and
                     profile picture. If you connect your Google Calendar, we
-                    also request OAuth access to read and write calendar
-                    events on your behalf (specifically, the{" "}
+                    also request OAuth access to read and write calendar events
+                    on your behalf (specifically, the{" "}
                     <code className="text-xs bg-muted px-1 py-0.5 rounded">
                       calendar.events
                     </code>{" "}

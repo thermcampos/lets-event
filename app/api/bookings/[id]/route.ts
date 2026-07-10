@@ -2,7 +2,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getGoogleCalendarClient } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
-import { sendBookingCompletedGuestEmail, sendBookingStatusChangedEmail } from "@/lib/resend";
+import {
+  sendBookingCompletedGuestEmail,
+  sendBookingStatusChangedEmail,
+} from "@/lib/resend";
 
 export async function GET(
   _request: NextRequest,
@@ -120,7 +123,10 @@ export async function PATCH(
         timezone: user.timezone,
       };
 
-      await sendBookingStatusChangedEmail({ to: session.user.email, ...emailParams });
+      await sendBookingStatusChangedEmail({
+        to: session.user.email,
+        ...emailParams,
+      });
 
       if (status === "completed") {
         await sendBookingCompletedGuestEmail({

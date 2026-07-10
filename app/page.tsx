@@ -38,7 +38,11 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/login" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 py-6 w-full sm:w-auto"
+              >
                 Sign In
               </Button>
             </Link>
