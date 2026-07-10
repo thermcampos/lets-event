@@ -128,9 +128,18 @@ export default function PrivacyPolicyPage() {
                 <div>
                   <h3 className="font-semibold text-foreground">Google</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    If you connect your Google Calendar, we request OAuth access
-                    to read and write calendar events on your behalf
-                    (specifically, the{" "}
+                    When you sign in with Google, we request your{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      userinfo.email
+                    </code>{" "}
+                    and{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      userinfo.profile
+                    </code>{" "}
+                    scopes to identify your account and display your name and
+                    profile picture. If you connect your Google Calendar, we
+                    also request OAuth access to read and write calendar
+                    events on your behalf (specifically, the{" "}
                     <code className="text-xs bg-muted px-1 py-0.5 rounded">
                       calendar.events
                     </code>{" "}
