@@ -1,5 +1,12 @@
 import type { Availability, Booking, EventType } from "@prisma/client";
-import { addDays, addMinutes, format, isAfter, isBefore, startOfDay } from "date-fns";
+import {
+  addDays,
+  addMinutes,
+  format,
+  isAfter,
+  isBefore,
+  startOfDay,
+} from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export interface TimeSlot {

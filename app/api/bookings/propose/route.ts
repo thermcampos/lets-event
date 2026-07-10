@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await sendProposalReceivedEmail({
-        to: booking.user.email!,
+        to: booking.user.email,
         guestName,
         guestEmail,
         eventTitle: booking.eventType.title,

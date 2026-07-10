@@ -43,7 +43,9 @@ export async function POST(
     // Check weekly limit for target week, excluding the booking being moved
     if (booking.eventType.maxBookingsPerWeek !== null) {
       const weekStart = new Date(newStartTime);
-      weekStart.setUTCDate(newStartTime.getUTCDate() - newStartTime.getUTCDay());
+      weekStart.setUTCDate(
+        newStartTime.getUTCDate() - newStartTime.getUTCDay(),
+      );
       weekStart.setUTCHours(0, 0, 0, 0);
       const weekEnd = new Date(weekStart);
       weekEnd.setUTCDate(weekStart.getUTCDate() + 7);

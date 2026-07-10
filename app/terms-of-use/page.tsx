@@ -34,7 +34,9 @@ export default function TermsOfUsePage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">2. What Event.me Is</h2>
+              <h2 className="text-xl font-semibold mb-3">
+                2. What Event.me Is
+              </h2>
               <p className="text-muted-foreground">
                 Event.me is a scheduling platform. It lets you define your
                 availability, create bookable event types, and share a link so
@@ -55,8 +57,8 @@ export default function TermsOfUsePage() {
                   account.
                 </li>
                 <li>
-                  You must provide accurate information when registering and keep
-                  it up to date.
+                  You must provide accurate information when registering and
+                  keep it up to date.
                 </li>
                 <li>You must be at least 13 years old to use Event.me.</li>
                 <li>
@@ -217,7 +219,10 @@ export default function TermsOfUsePage() {
               <h2 className="text-xl font-semibold mb-3">14. Contact</h2>
               <p className="text-muted-foreground">
                 Questions about these terms can be sent to{" "}
-                <a href="mailto:ricardompcampos@gmail.com" className="underline">
+                <a
+                  href="mailto:ricardompcampos@gmail.com"
+                  className="underline"
+                >
                   ricardompcampos@gmail.com
                 </a>
                 .

@@ -46,7 +46,9 @@ export default async function BookingSuccessPage({
                   <p className="font-medium text-sm">Guest Details</p>
                   <p className="text-sm text-muted-foreground">{guestName}</p>
                   {guestEmail && (
-                    <p className="text-sm text-muted-foreground">{guestEmail}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {guestEmail}
+                    </p>
                   )}
                 </div>
               </div>

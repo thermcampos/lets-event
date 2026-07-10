@@ -123,8 +123,8 @@ export function BookingsTable({
 
             <div className="text-sm">
               <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Guest:</span> {booking.guestName}{" "}
-                ({booking.guestEmail})
+                <span className="font-medium text-foreground">Guest:</span>
+                {booking.guestName} ({booking.guestEmail})
               </p>
               {booking.guestNotes && (
                 <p className="text-muted-foreground mt-1">
@@ -145,7 +145,9 @@ export function BookingsTable({
                   className="flex-1 sm:flex-none"
                 >
                   <Check className="w-4 h-4 shrink-0" />
-                  <span className="ml-1">{completing === booking.id ? "Completing..." : "Complete"}</span>
+                  <span className="ml-1">
+                    {completing === booking.id ? "Completing..." : "Complete"}
+                  </span>
                 </Button>
               )}
               <Button
@@ -164,7 +166,9 @@ export function BookingsTable({
                 className="flex-1 sm:flex-none"
               >
                 <X className="w-4 h-4 shrink-0" />
-                <span className="ml-1">{cancelling === booking.id ? "Cancelling..." : "Cancel"}</span>
+                <span className="ml-1">
+                  {cancelling === booking.id ? "Cancelling..." : "Cancel"}
+                </span>
               </Button>
             </div>
           )}

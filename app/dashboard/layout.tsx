@@ -1,15 +1,15 @@
 import { Calendar, LogOut, Menu } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
 
 async function handleSignOut() {
@@ -88,7 +88,11 @@ export default async function DashboardLayout({
                     <nav className="flex flex-col gap-2">
                       {navItems.map((item) => (
                         <SheetClose asChild key={item.href}>
-                          <Button variant="ghost" asChild className="justify-start">
+                          <Button
+                            variant="ghost"
+                            asChild
+                            className="justify-start"
+                          >
                             <a href={item.href}>{item.label}</a>
                           </Button>
                         </SheetClose>
