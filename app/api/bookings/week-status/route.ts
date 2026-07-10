@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
         (b) => b.startTime >= weekStart && b.startTime < weekEnd,
       ).length;
 
-      if (count >= eventType.maxBookingsPerWeek!) {
+      if (count >= eventType.maxBookingsPerWeek) {
         const weekEndInclusive = new Date(weekEnd);
         weekEndInclusive.setDate(weekEndInclusive.getDate() - 1);
         fullWeeks.push({

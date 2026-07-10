@@ -60,10 +60,7 @@ function SheetContent({
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      className={cn("flex flex-col space-y-1.5", className)}
-      {...props}
-    />
+    <div className={cn("flex flex-col space-y-1.5", className)} {...props} />
   );
 }
 

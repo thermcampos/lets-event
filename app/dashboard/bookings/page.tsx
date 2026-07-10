@@ -64,7 +64,10 @@ export default async function BookingsPage() {
           <CardTitle>Upcoming</CardTitle>
         </CardHeader>
         <CardContent>
-          <BookingsTable bookings={confirmed} emptyMessage="No upcoming bookings" />
+          <BookingsTable
+            bookings={confirmed}
+            emptyMessage="No upcoming bookings"
+          />
         </CardContent>
       </Card>
 

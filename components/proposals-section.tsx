@@ -8,7 +8,9 @@ interface ProposalsSectionProps {
   proposals: (Booking & { eventType: EventType })[];
 }
 
-export function ProposalsSection({ proposals: initial }: ProposalsSectionProps) {
+export function ProposalsSection({
+  proposals: initial,
+}: ProposalsSectionProps) {
   const [proposals, setProposals] = useState(initial);
 
   const handleResponded = (id: string) => {

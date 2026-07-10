@@ -153,110 +153,117 @@ export function BookingForm({ eventType }: BookingFormProps) {
       />
       <div className="grid md:grid-cols-2 gap-8">
         <div>
-        <h3 className="font-semibold mb-4">Select a date</h3>
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={handleDateSelect}
-          disabled={[
-            (date) =>
-              date <
-              startOfDay(
-                addMinutes(new Date(), eventType.minimumNoticeHours * 60),
-              ),
-            ...fullWeekRanges,
-          ]}
-          showOutsideDays={false}
-          className="rounded-md border"
-        />
-        <div className="mt-4 text-center">
-          <Button
-            type="button"
-            variant="link"
-            className="text-sm text-muted-foreground"
-            onClick={() => setProposalOpen(true)}
-          >
-            Can&apos;t find a time that works?
-          </Button>
-        </div>
+          <h3 className="font-semibold mb-4">Select a date</h3>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            disabled={[
+              (date) =>
+                date <
+                startOfDay(
+                  addMinutes(new Date(), eventType.minimumNoticeHours * 60),
+                ),
+              ...fullWeekRanges,
+            ]}
+            showOutsideDays={false}
+            className="rounded-md border"
+          />
+          <div className="mt-4 text-center">
+            <Button
+              type="button"
+              variant="link"
+              className="text-sm text-muted-foreground"
+              onClick={() => setProposalOpen(true)}
+            >
+              Can&apos;t find a time that works?
+            </Button>
+          </div>
         </div>
 
         <div>
-        {selectedDate && (
-          <>
-            <h3 className="font-semibold mb-4">
-              Available times - {format(selectedDate, "MMMM d, yyyy")}
-            </h3>
+          {selectedDate && (
+            <>
+              <h3 className="font-semibold mb-4">
+                Available times - {format(selectedDate, "MMMM d, yyyy")}
+              </h3>
 
-            {loadingSlots ? (
-              <p className="text-sm text-muted-foreground">Loading slots...</p>
-            ) : availableSlots.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No available slots for this date
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 mb-6">
-                {availableSlots.map((slot) => (
+              {loadingSlots ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading slots...
+                </p>
+              ) : availableSlots.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No available slots for this date
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 mb-6">
+                  {availableSlots.map((slot) => (
+                    <Button
+                      key={slot.start.toISOString()}
+                      type="button"
+                      variant={
+                        selectedSlot?.start.getTime() === slot.start.getTime()
+                          ? "default"
+                          : "outline"
+                      }
+                      className="w-full"
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {format(slot.start, "HH:mm")} -{" "}
+                      {format(slot.end, "HH:mm")}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              {selectedSlot && (
+                <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="guestName">Name *</Label>
+                    <Input
+                      id="guestName"
+                      name="guestName"
+                      type="text"
+                      required
+                      placeholder="John Doe"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="guestEmail">Email *</Label>
+                    <Input
+                      id="guestEmail"
+                      name="guestEmail"
+                      type="email"
+                      required
+                      placeholder="john@example.com"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="guestNotes">Notes (optional)</Label>
+                    <Textarea
+                      id="guestNotes"
+                      name="guestNotes"
+                      placeholder="Any additional information..."
+                      rows={3}
+                    />
+                  </div>
+
                   <Button
-                    key={slot.start.toISOString()}
-                    type="button"
-                    variant={
-                      selectedSlot?.start.getTime() === slot.start.getTime()
-                        ? "default"
-                        : "outline"
-                    }
+                    type="submit"
                     className="w-full"
-                    onClick={() => setSelectedSlot(slot)}
+                    disabled={submitting}
                   >
-                    {format(slot.start, "HH:mm")} - {format(slot.end, "HH:mm")}
+                    {submitting ? "Booking..." : "Confirm booking"}
                   </Button>
-                ))}
-              </div>
-            )}
-
-            {selectedSlot && (
-              <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="guestName">Name *</Label>
-                  <Input
-                    id="guestName"
-                    name="guestName"
-                    type="text"
-                    required
-                    placeholder="John Doe"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="guestEmail">Email *</Label>
-                  <Input
-                    id="guestEmail"
-                    name="guestEmail"
-                    type="email"
-                    required
-                    placeholder="john@example.com"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="guestNotes">Notes (optional)</Label>
-                  <Textarea
-                    id="guestNotes"
-                    name="guestNotes"
-                    placeholder="Any additional information..."
-                    rows={3}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? "Booking..." : "Confirm booking"}
-                </Button>
-              </form>
-            )}
-          </>
-        )}
+                </form>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }
