@@ -5,14 +5,7 @@ on:
     branches: [main]
 
 env:
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: postgres
-  POSTGRES_DB: test
-  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test?schema=public"
-  NEXTAUTH_SECRET: "test-secret-for-ci"
-  NEXTAUTH_URL: "http://localhost:3000"
-  AUTH_SECRET: "test-secret-for-ci"
-  AUTH_URL: "http://localhost:3000"
+  RESEND_APIKEY: "any-api-key-for-ci"
 
 jobs:
   build:
