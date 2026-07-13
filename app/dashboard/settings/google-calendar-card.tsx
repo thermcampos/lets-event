@@ -11,7 +11,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function GoogleCalendarCard({ isConnected }: { isConnected: boolean }) {
+export function GoogleCalendarCard({
+  isConnected,
+  disconnectAction,
+}: {
+  isConnected: boolean;
+  disconnectAction: () => Promise<void>;
+}) {
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -26,9 +32,16 @@ export function GoogleCalendarCard({ isConnected }: { isConnected: boolean }) {
       </CardHeader>
       <CardContent>
         {isConnected ? (
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle2 className="h-5 w-5" />
-            <span className="font-medium">Connected to Google Calendar</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle2 className="h-5 w-5" />
+              <span className="font-medium">Connected to Google Calendar</span>
+            </div>
+            <form action={disconnectAction}>
+              <Button variant="outline" type="submit">
+                Disconnect
+              </Button>
+            </form>
           </div>
         ) : (
           <div className="space-y-4">

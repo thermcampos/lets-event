@@ -38,6 +38,21 @@ export default async function SettingsPage() {
 
   const googleConnected = await isGoogleCalendarConnected(session.user.id);
 
+  async function disconnectGoogleCalendar() {
+    "use server";
+    const session = await auth();
+    if (!session?.user?.id) return;
+
+    await prisma.account.deleteMany({
+      where: {
+        userId: session.user.id,
+        provider: "google",
+      },
+    });
+
+    redirect("/dashboard/settings");
+  }
+
   async function updateSettings(_prevState: any, formData: FormData) {
     "use server";
     const session = await auth();
@@ -84,7 +99,10 @@ export default async function SettingsPage() {
 
       {user?.username && <BookingLinkCard username={user.username} />}
 
-      <GoogleCalendarCard isConnected={googleConnected} />
+      <GoogleCalendarCard
+        isConnected={googleConnected}
+        disconnectAction={disconnectGoogleCalendar}
+      />
 
       <Card>
         <CardHeader>
