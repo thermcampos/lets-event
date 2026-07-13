@@ -45,7 +45,6 @@ Users must connect their Google Calendar:
 2. Go to Settings
 3. Click "Connect Google Calendar"
 4. Authorize the application with required permissions:
-   - `https://www.googleapis.com/auth/calendar`
    - `https://www.googleapis.com/auth/calendar.events`
 
 ## Required Scopes
@@ -53,9 +52,8 @@ Users must connect their Google Calendar:
 The integration requires the following Google OAuth scopes:
 
 - `openid` - Basic authentication
-- `email` - User email address
-- `profile` - User profile information
-- `https://www.googleapis.com/auth/calendar` - Full calendar access
+- `https://www.googleapis.com/auth/userinfo.email` - User email address
+- `https://www.googleapis.com/auth/userinfo.profile` - User profile information
 - `https://www.googleapis.com/auth/calendar.events` - Event management
 
 ## Features

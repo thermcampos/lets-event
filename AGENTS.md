@@ -118,7 +118,7 @@ Google OAuth requires special scope for Calendar access:
 // auth.ts - Note the extended scope
 authorization: {
   params: {
-    scope: "openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
+    scope: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/calendar.events",
     access_type: "offline",
     prompt: "consent",
   },

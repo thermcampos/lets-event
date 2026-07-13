@@ -35,9 +35,8 @@ The Google Calendar integration allows Event.me to:
    - Select "External" (or "Internal" if using Google Workspace)
    - Add required scopes:
      - `openid`
-     - `email`
-     - `profile`
-     - `https://www.googleapis.com/auth/calendar`
+     - `https://www.googleapis.com/auth/userinfo.email`
+     - `https://www.googleapis.com/auth/userinfo.profile`
      - `https://www.googleapis.com/auth/calendar.events`
 
 6. Copy the Client ID and Client Secret to your `.env` file:

@@ -30,7 +30,8 @@ This guide explains how to set up Google Calendar integration for Event.me. User
 4. Click **Save and Continue**
 5. On **Scopes** page, click **Add or Remove Scopes**
 6. Add these scopes:
-   - `https://www.googleapis.com/auth/calendar.readonly` (Read calendar events)
+   - `https://www.googleapis.com/auth/userinfo.email` (User email address)
+   - `https://www.googleapis.com/auth/userinfo.profile` (User profile information)
    - `https://www.googleapis.com/auth/calendar.events` (Create/edit calendar events)
 7. Click **Save and Continue**
 8. Add test users (your email and any testers) if the app is in Testing mode
@@ -90,7 +91,8 @@ Google OAuth tokens expire. The refresh token is stored in the database and used
 
 ## Scopes Explanation
 
-- `calendar.readonly`: Read user's calendar to check for conflicts
+- `userinfo.email`: Access to user's email address
+- `userinfo.profile`: Access to basic profile information
 - `calendar.events`: Create and manage calendar events for bookings
 
 ## Security Notes

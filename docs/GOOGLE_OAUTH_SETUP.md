@@ -35,9 +35,8 @@ Event.me integrates with Google Calendar to:
      - Developer contact: your email
    - Add scopes:
      - `openid`
-     - `email`
-     - `profile`
-     - `https://www.googleapis.com/auth/calendar`
+     - `https://www.googleapis.com/auth/userinfo.email`
+     - `https://www.googleapis.com/auth/userinfo.profile`
      - `https://www.googleapis.com/auth/calendar.events`
    - Save and continue
 
@@ -100,9 +99,8 @@ When a booking is made:
 ### Required Scopes
 
 - `openid`: User identity verification
-- `email`: Access to user's email address
-- `profile`: Access to basic profile information
-- `https://www.googleapis.com/auth/calendar`: Read/write calendar access
+- `https://www.googleapis.com/auth/userinfo.email`: Access to user's email address
+- `https://www.googleapis.com/auth/userinfo.profile`: Access to basic profile information
 - `https://www.googleapis.com/auth/calendar.events`: Create and manage events
 
 ## Security Considerations
