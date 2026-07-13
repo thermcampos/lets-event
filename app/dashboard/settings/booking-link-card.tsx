@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +13,13 @@ import {
 
 export function BookingLinkCard({ username }: { username: string }) {
   const [copied, setCopied] = useState(false);
-  const bookingUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/book/${username}`;
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const bookingUrl = `${origin}/book/${username}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(bookingUrl);
