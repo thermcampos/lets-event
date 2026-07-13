@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  allowedDevOrigins:
+    process.env.NODE_ENV === "development"
+    ? ['flattop-depth-dropper.ngrok-free.dev']
+    : [],
 };
 
 export default nextConfig;
+
