@@ -41,8 +41,9 @@ jobs:
           echo "Generated tag: ${TAG}"
 
       - name: Deploy to Vercel
-        run: vercel deploy --prod \
-          --token=${{ secrets.VERCEL_TOKEN }} \
-          --build-env NEXT_PUBLIC_APP_BUILD_VERSION=${{ steps.version.outputs.tag }} \
-          --env NEXT_PUBLIC_APP_BUILD_VERSION=${{ steps.version.outputs.tag }} \
-          --yes
+        run: |
+          vercel deploy --prod \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --build-env NEXT_PUBLIC_APP_BUILD_VERSION=${{ steps.version.outputs.tag }} \
+            --env NEXT_PUBLIC_APP_BUILD_VERSION=${{ steps.version.outputs.tag }} \
+            --yes
