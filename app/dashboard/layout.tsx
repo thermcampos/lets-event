@@ -1,6 +1,8 @@
-import { Calendar, LogOut, Menu } from "lucide-react";
+import { Calendar, Menu } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +51,7 @@ export default async function DashboardLayout({
               <nav className="hidden md:flex gap-4">
                 {navItems.map((item) => (
                   <Button key={item.href} variant="ghost" asChild>
-                    <a href={item.href}>{item.label}</a>
+                    <Link href={item.href}>{item.label}</Link>
                   </Button>
                 ))}
               </nav>
@@ -63,9 +65,7 @@ export default async function DashboardLayout({
                 </p>
               </div>
               <form action={handleSignOut} className="hidden sm:block">
-                <Button variant="ghost" size="icon" type="submit">
-                  <LogOut className="h-5 w-5" />
-                </Button>
+                <SignOutButton />
               </form>
               <Sheet>
                 <SheetTrigger asChild>
@@ -93,23 +93,20 @@ export default async function DashboardLayout({
                             asChild
                             className="justify-start"
                           >
-                            <a href={item.href}>{item.label}</a>
+                            <Link href={item.href}>{item.label}</Link>
                           </Button>
                         </SheetClose>
                       ))}
                     </nav>
-                    <div className="border-t pt-4 mt-auto">
-                      <form action={handleSignOut}>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start"
-                          type="submit"
-                        >
-                          <LogOut className="h-5 w-5 mr-2" />
-                          Sign Out
-                        </Button>
-                      </form>
-                    </div>
+                    <form
+                      action={handleSignOut}
+                      className="border-t pt-4 mt-auto"
+                    >
+                      <SignOutButton
+                        size="default"
+                        className="w-full justify-start"
+                      />
+                    </form>
                   </div>
                 </SheetContent>
               </Sheet>

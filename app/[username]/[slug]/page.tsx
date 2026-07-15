@@ -1,7 +1,7 @@
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { PublicBookingForm } from "@/components/public-booking-form";
 import {
   Card,
   CardContent,
@@ -9,9 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { prisma } from "@/lib/prisma.server";
 
 type Props = {
@@ -153,58 +150,12 @@ export default async function PublicBookingPage({
                 </div>
               </CardHeader>
               <CardContent>
-                <form action={createBooking} className="space-y-6">
-                  <input
-                    type="hidden"
-                    name="eventTypeId"
-                    value={eventType.id}
-                  />
-                  <input
-                    type="hidden"
-                    name="duration"
-                    value={eventType.duration}
-                  />
-                  <input
-                    type="hidden"
-                    name="startTime"
-                    value={`${date}T${time}:00`}
-                  />
-
-                  <div className="space-y-2">
-                    <Label htmlFor="guestName">Your Name *</Label>
-                    <Input
-                      id="guestName"
-                      name="guestName"
-                      placeholder="John Doe"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="guestEmail">Your Email *</Label>
-                    <Input
-                      id="guestEmail"
-                      name="guestEmail"
-                      type="email"
-                      placeholder="john@example.com"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="guestNotes">Additional Notes</Label>
-                    <Textarea
-                      id="guestNotes"
-                      name="guestNotes"
-                      placeholder="Let us know if you have any specific topics or questions..."
-                      rows={4}
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full">
-                    Confirm Booking
-                  </Button>
-                </form>
+                <PublicBookingForm
+                  action={createBooking}
+                  eventTypeId={eventType.id}
+                  duration={eventType.duration}
+                  startTime={`${date}T${time}:00`}
+                />
               </CardContent>
             </Card>
           </div>

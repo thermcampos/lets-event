@@ -3,7 +3,7 @@ import { AuthError } from "next-auth";
 import { Suspense } from "react";
 import { signIn } from "@/auth";
 import { AuthToast } from "@/components/auth-toast";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Card,
   CardContent,
@@ -71,9 +71,14 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" size="lg">
+            <SubmitButton
+              type="submit"
+              className="w-full"
+              size="lg"
+              loadingText="Signing in..."
+            >
               Sign In
-            </Button>
+            </SubmitButton>
           </form>
 
           <div className="relative my-6">

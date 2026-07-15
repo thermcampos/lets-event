@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { Button } from "@/components/ui/button";
+import { AvailabilityForm } from "@/components/availability-form";
+import { DeleteAvailabilityButton } from "@/components/delete-availability-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { prisma } from "@/lib/prisma.server";
 
 const DAYS_OF_WEEK = [
@@ -103,49 +102,7 @@ export default async function AvailabilityPage() {
             <CardTitle>Add Availability</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={handleSaveAvailability} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="dayOfWeek">Day of Week</Label>
-                <select
-                  id="dayOfWeek"
-                  name="dayOfWeek"
-                  required
-                  className="w-full px-3 py-2 border rounded-md"
-                >
-                  {DAYS_OF_WEEK.map((day) => (
-                    <option key={day.value} value={day.value}>
-                      {day.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="startTime">Start Time</Label>
-                <Input
-                  id="startTime"
-                  name="startTime"
-                  type="time"
-                  required
-                  placeholder="09:00"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="endTime">End Time</Label>
-                <Input
-                  id="endTime"
-                  name="endTime"
-                  type="time"
-                  required
-                  placeholder="17:00"
-                />
-              </div>
-
-              <Button type="submit" className="w-full">
-                Add Availability
-              </Button>
-            </form>
+            <AvailabilityForm action={handleSaveAvailability} />
           </CardContent>
         </Card>
 
@@ -177,12 +134,10 @@ export default async function AvailabilityPage() {
                         {slot.startTime} - {slot.endTime}
                       </p>
                     </div>
-                    <form action={handleDeleteAvailability}>
-                      <input type="hidden" name="id" value={slot.id} />
-                      <Button type="submit" variant="destructive" size="sm">
-                        Delete
-                      </Button>
-                    </form>
+                    <DeleteAvailabilityButton
+                      action={handleDeleteAvailability}
+                      slotId={slot.id}
+                    />
                   </div>
                 ))}
               </div>

@@ -1,4 +1,5 @@
 import { Calendar, Clock, Users } from "lucide-react";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,9 +103,9 @@ export default async function DashboardPage() {
                     className="px-0 h-auto text-xs"
                     asChild
                   >
-                    <a href="/dashboard/event-types">
+                    <Link href="/dashboard/event-types">
                       View all {eventTypes.length} event types →
-                    </a>
+                    </Link>
                   </Button>
                 )}
               </div>
@@ -162,7 +163,7 @@ export default async function DashboardPage() {
                   Define when you&apos;re available for meetings
                 </p>
                 <Button variant="link" className="px-0" asChild>
-                  <a href="/availability">Configure now →</a>
+                  <Link href="/dashboard/availability">Configure now →</Link>
                 </Button>
               </div>
             </div>
@@ -177,7 +178,7 @@ export default async function DashboardPage() {
                   Set up different types of meetings you offer
                 </p>
                 <Button variant="link" className="px-0" asChild>
-                  <a href="/dashboard/event-types">Create event type →</a>
+                  <Link href="/dashboard/event-types">Create event type →</Link>
                 </Button>
               </div>
             </div>
@@ -267,9 +268,9 @@ export default async function DashboardPage() {
                     className="px-0 h-auto text-xs w-full"
                     asChild
                   >
-                    <a href="/dashboard/bookings">
+                    <Link href="/dashboard/bookings">
                       View all {bookingsCount} bookings →
-                    </a>
+                    </Link>
                   </Button>
                 )}
               </div>

@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { EventTypeForm } from "@/components/event-type-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,9 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { prisma } from "@/lib/prisma.server";
 import { DeleteButton } from "./delete-button";
 
@@ -121,121 +119,23 @@ export default async function EditEventTypePage({
             <CardDescription>Update your event type settings</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={updateEventType} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  defaultValue={eventType.title}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug</Label>
-                <Input
-                  id="slug"
-                  name="slug"
-                  defaultValue={eventType.slug}
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  This will be part of your booking link
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration (minutes)</Label>
-                <Input
-                  id="duration"
-                  name="duration"
-                  type="number"
-                  defaultValue={eventType.duration}
-                  min="15"
-                  step="15"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  defaultValue={eventType.description || ""}
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="maxBookingsPerWeek">
-                  Max Bookings Per Week
-                </Label>
-                <Input
-                  id="maxBookingsPerWeek"
-                  name="maxBookingsPerWeek"
-                  type="number"
-                  defaultValue={eventType.maxBookingsPerWeek ?? ""}
-                  placeholder="Unlimited"
-                  min="1"
-                />
-                <p className="text-sm text-muted-foreground">
-                  Leave empty for unlimited bookings
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="minimumNoticeHours">
-                  Minimum Notice (hours)
-                </Label>
-                <Input
-                  id="minimumNoticeHours"
-                  name="minimumNoticeHours"
-                  type="number"
-                  defaultValue={eventType.minimumNoticeHours}
-                  min="1"
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  Minimum hours before event can start
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="maximumNoticeDays">Maximum Notice (days)</Label>
-                <Input
-                  id="maximumNoticeDays"
-                  name="maximumNoticeDays"
-                  type="number"
-                  defaultValue={eventType.maximumNoticeDays}
-                  min="1"
-                  max="365"
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  Maximum days in advance for booking
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="active"
-                  name="active"
-                  defaultChecked={eventType.active}
-                  className="h-4 w-4"
-                />
-                <Label htmlFor="active">Active</Label>
-              </div>
-
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  Save Changes
-                </Button>
-                <DeleteButton deleteAction={deleteEventType} />
-              </div>
-            </form>
+            <EventTypeForm
+              action={updateEventType}
+              defaultValues={{
+                title: eventType.title,
+                slug: eventType.slug,
+                description: eventType.description,
+                duration: eventType.duration,
+                maxBookingsPerWeek: eventType.maxBookingsPerWeek,
+                minimumNoticeHours: eventType.minimumNoticeHours,
+                maximumNoticeDays: eventType.maximumNoticeDays,
+                active: eventType.active,
+              }}
+              showActive
+            />
+            <div className="mt-6 pt-6 border-t">
+              <DeleteButton deleteAction={deleteEventType} />
+            </div>
           </CardContent>
         </Card>
       </div>

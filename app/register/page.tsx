@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AuthToast } from "@/components/auth-toast";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Card,
   CardContent,
@@ -116,9 +116,14 @@ export default function RegisterPage() {
                 Must be at least 6 characters
               </p>
             </div>
-            <Button type="submit" className="w-full" size="lg">
+            <SubmitButton
+              type="submit"
+              className="w-full"
+              size="lg"
+              loadingText="Creating account..."
+            >
               Create Account
-            </Button>
+            </SubmitButton>
           </form>
 
           <div className="relative my-6">

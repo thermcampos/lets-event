@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped React Day Picker dep to v10 (If anything breaks, see [here](https://daypicker.dev/upgrading))
 - Notification email is sent one hour before the meeting, instead of 1 day.
 
+### Fixed
+- Loading state between pages. [Closes #7](https://lightroasted.vps-kinghost.net/rmcampos/event.me/issues/7)
+
 ## 2026-07-10
 
 ### Changed
