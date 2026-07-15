@@ -32,5 +32,17 @@ jobs:
           mkdir -p .vercel
           echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
 
+      - name: Generate version tag
+        id: version
+        run: |
+          DATE=$(date +'%Y.%m.%d')
+          TAG="v${DATE}.${{ github.run_number }}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "Generated tag: ${TAG}"
+
       - name: Deploy to Vercel
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: vercel deploy --prod \
+          --token=${{ secrets.VERCEL_TOKEN }} \
+          --build-env NEXT_PUBLIC_APP_BUILD_VERSION=${{ steps.version.outputs.tag }} \
+          --env NEXT_PUBLIC_APP_BUILD_VERSION=${{ steps.version.outputs.tag }} \
+          --yes

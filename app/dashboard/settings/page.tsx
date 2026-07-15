@@ -115,6 +115,16 @@ export default async function SettingsPage() {
         <CardContent className="space-y-6">
           <AvatarUpload currentImage={user.image} name={user.name} />
           <SettingsForm user={user} updateSettings={updateSettings} />
+          <div className="pt-4 border-t text-center">
+            <a
+              href="https://lightroasted.vps-kinghost.net/rmcampos/event.me/src/branch/main/CHANGELOG.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground hover:underline"
+            >
+              Build version: {process.env.NEXT_PUBLIC_APP_BUILD_VERSION || "dev"}
+            </a>
+          </div>
         </CardContent>
       </Card>
     </>
