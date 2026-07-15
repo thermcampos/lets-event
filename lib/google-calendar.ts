@@ -108,7 +108,7 @@ export async function createGoogleCalendarEvent(
       reminders: {
         useDefault: false,
         overrides: [
-          { method: "email", minutes: 24 * 60 },
+          { method: "email", minutes: 60 },
           { method: "popup", minutes: 30 },
         ],
       },
