@@ -8,6 +8,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface BookingsTableProps {
   bookings: (Booking & { eventType: EventType })[];
@@ -22,6 +31,11 @@ export function BookingsTable({
   const [bookings, setBookings] = useState(initialBookings);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [completing, setCompleting] = useState<string | null>(null);
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null,
+  );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleCancel = async (bookingId: string) => {
     setCancelling(bookingId);
@@ -53,28 +67,53 @@ export function BookingsTable({
     }
   };
 
-  const handleComplete = async (bookingId: string) => {
-    setCompleting(bookingId);
+  const openCompleteDialog = (bookingId: string) => {
+    setSelectedBookingId(bookingId);
+    setSelectedFile(null);
+    setCompleteDialogOpen(true);
+  };
+
+  const closeCompleteDialog = () => {
+    setCompleteDialogOpen(false);
+    setSelectedBookingId(null);
+    setSelectedFile(null);
+  };
+
+  const handleComplete = async () => {
+    if (!selectedBookingId) {
+      return;
+    }
+
+    setCompleting(selectedBookingId);
 
     try {
-      const response = await fetch(`/api/bookings/${bookingId}`, {
+      const formData = new FormData();
+      formData.append("status", "completed");
+      if (selectedFile) {
+        formData.append("pdf", selectedFile);
+      }
+
+      const response = await fetch(`/api/bookings/${selectedBookingId}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "completed" }),
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to complete booking");
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to complete booking");
       }
 
-      setBookings(bookings.filter((b) => b.id !== bookingId));
+      setBookings(bookings.filter((b) => b.id !== selectedBookingId));
       router.refresh();
 
       toast.success("Meeting marked as completed");
-    } catch (_error) {
-      toast.error("Failed to mark meeting as completed");
+      closeCompleteDialog();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to mark meeting as completed";
+      toast.error(message);
     } finally {
       setCompleting(null);
     }
@@ -140,7 +179,7 @@ export function BookingsTable({
               {new Date(booking.endTime) < new Date() && (
                 <Button
                   variant="outline"
-                  onClick={() => handleComplete(booking.id)}
+                  onClick={() => openCompleteDialog(booking.id)}
                   disabled={completing === booking.id}
                   className="flex-1 sm:flex-none"
                 >
@@ -174,6 +213,51 @@ export function BookingsTable({
           )}
         </div>
       ))}
+
+      <Dialog open={completeDialogOpen} onOpenChange={setCompleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark meeting as completed</DialogTitle>
+            <DialogDescription>
+              The invitee will receive a completion email. You can optionally
+              attach a PDF (max 5 MB).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="completion-pdf">Attachment (optional)</Label>
+              <Input
+                id="completion-pdf"
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Only PDF files up to 5 MB are allowed.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={closeCompleteDialog}
+              disabled={completing === selectedBookingId}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleComplete}
+              disabled={completing === selectedBookingId}
+            >
+              {completing === selectedBookingId
+                ? "Completing..."
+                : "Mark as completed"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

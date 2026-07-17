@@ -402,8 +402,17 @@ export async function sendBookingCompletedGuestEmail(params: {
   startTime: Date;
   endTime: Date;
   timezone?: string;
+  attachment?: { filename: string; content: string };
 }) {
-  const { to, guestName, eventTitle, startTime, endTime, timezone } = params;
+  const {
+    to,
+    guestName,
+    eventTitle,
+    startTime,
+    endTime,
+    timezone,
+    attachment,
+  } = params;
 
   const safeEventTitle = escapeHtml(eventTitle);
   const safeGuestName = escapeHtml(guestName);
@@ -428,6 +437,7 @@ export async function sendBookingCompletedGuestEmail(params: {
     to,
     subject: `Meeting Completed: ${eventTitle}`,
     html: wrapEmail("#10b981", body),
+    attachments: attachment ? [attachment] : undefined,
   });
 }
 

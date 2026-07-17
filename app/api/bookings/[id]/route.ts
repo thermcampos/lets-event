@@ -56,8 +56,15 @@ export async function PATCH(
     }
 
     const { id } = await context.params;
-    const body = await request.json();
-    const { status } = body;
+    const formData = await request.formData();
+    const status = formData.get("status") as
+      | "proposed"
+      | "confirmed"
+      | "declined"
+      | "cancelled"
+      | "completed"
+      | null;
+    const pdfFile = formData.get("pdf") as File | null;
 
     if (
       !status ||
@@ -102,6 +109,37 @@ export async function PATCH(
       }
     }
 
+    let attachment: { filename: string; content: string } | undefined;
+
+    if (status === "completed" && pdfFile) {
+      if (pdfFile.type !== "application/pdf") {
+        return NextResponse.json(
+          { error: "Attachment must be a PDF" },
+          { status: 400 },
+        );
+      }
+
+      const MAX_PDF_SIZE = 5 * 1024 * 1024;
+      if (pdfFile.size > MAX_PDF_SIZE) {
+        return NextResponse.json(
+          { error: "PDF must be smaller than 5 MB" },
+          { status: 400 },
+        );
+      }
+
+      try {
+        const bytes = new Uint8Array(await pdfFile.arrayBuffer());
+        const content = Buffer.from(bytes).toString("base64");
+        attachment = { filename: pdfFile.name, content };
+      } catch (error) {
+        console.error("Failed to read PDF attachment:", error);
+        return NextResponse.json(
+          { error: "Failed to read PDF attachment" },
+          { status: 400 },
+        );
+      }
+    }
+
     // Update booking
     const updatedBooking = await prisma.booking.update({
       where: { id },
@@ -136,6 +174,7 @@ export async function PATCH(
           startTime: updatedBooking.startTime,
           endTime: updatedBooking.endTime,
           timezone: user.timezone,
+          attachment,
         });
       }
     } catch (emailError) {

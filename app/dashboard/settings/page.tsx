@@ -122,7 +122,8 @@ export default async function SettingsPage() {
               rel="noopener noreferrer"
               className="text-xs text-muted-foreground hover:underline"
             >
-              Build version: {process.env.NEXT_PUBLIC_APP_BUILD_VERSION || "dev"}
+              Build version:{" "}
+              {process.env.NEXT_PUBLIC_APP_BUILD_VERSION || "dev"}
             </a>
           </div>
         </CardContent>
