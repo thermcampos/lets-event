@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - From old naming Event Me to new naming Let's Event
+- App icon including icons for PWA and other devices.
 
 ## 2026-07-17
 

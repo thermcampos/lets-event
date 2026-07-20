@@ -17,12 +17,24 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Let's Event - Simple Scheduling",
   description: "Schedule meetings with ease",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-180.png", type: "image/png", sizes: "180x180" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: { url: "/icon-180.png", sizes: "180x180" },
+    shortcut: "/icon-192.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#4f46e5",
 };
 
 export default function RootLayout({

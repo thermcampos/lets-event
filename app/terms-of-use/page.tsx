@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -8,12 +7,6 @@ export default function TermsOfUsePage() {
       <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src="/logo.png"
-              alt="Let's Event"
-              width={40}
-              height={40}
-            />
             <span className="text-xl font-bold">Let&apos;s Event</span>
           </Link>
         </div>
