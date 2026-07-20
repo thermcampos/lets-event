@@ -46,7 +46,7 @@ export default async function DashboardLayout({
             <div className="flex items-center gap-8">
               <div className="flex items-center">
                 <Calendar className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-                <span className="ml-2 text-xl font-bold">Event.me</span>
+                <span className="ml-2 text-xl font-bold">Let&apos;s Event</span>
               </div>
               <nav className="hidden md:flex gap-4">
                 {navItems.map((item) => (

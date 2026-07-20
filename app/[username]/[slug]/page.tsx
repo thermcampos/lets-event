@@ -104,7 +104,7 @@ export default async function PublicBookingPage({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Calendar className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold">Event.me</span>
+              <span className="ml-2 text-xl font-bold">Let&apos;s Event</span>
             </div>
           </div>
         </div>

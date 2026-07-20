@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-Event.me is a scheduling application built using modern web technologies with a focus on simplicity and performance.
+Let's Event is a scheduling application built using modern web technologies with a focus on simplicity and performance.
 
 ### Tech Stack
 

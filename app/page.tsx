@@ -10,8 +10,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2">
-              <Image src="/logo.png" alt="Event.me" width={32} height={32} />
-              <span className="text-xl font-bold">Event.me</span>
+              <Image
+                src="/logo.png"
+                alt="Let's Event"
+                width={32}
+                height={32}
+              />
+              <span className="text-xl font-bold">Let&apos;s Event</span>
             </Link>
             <Link href="/login">
               <Button>Sign In</Button>
@@ -111,7 +116,7 @@ export default function Home() {
               </Link>
             </div>
             <p className="text-muted-foreground">
-              © 2026 Event.me - Simple scheduling for everyone
+              © 2026 Let&apos;s Event - Simple scheduling for everyone
             </p>
           </div>
         </div>

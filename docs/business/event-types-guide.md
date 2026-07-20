@@ -24,7 +24,7 @@ Event Types are the different kinds of meetings you offer to your guests. Each e
 
 Once you create an event type, you'll get a shareable link like:
 ```
-https://event.me/yourusername/30min
+https://letsevent.com/yourusername/30min
 ```
 
 Share this link with anyone who wants to book time with you!

@@ -1,8 +1,8 @@
-# Event.me
+# Let's Event
 
 > **Simple, fast meeting scheduling—no hassle.**
 
-Event.me is a lightweight alternative to Calendly. Share your availability, let others book directly. That's it.
+Let&apos;s Event is a lightweight alternative to Calendly. Share your availability, let others book directly. That&apos;s it.
 
 ---
 
@@ -260,16 +260,6 @@ MIT License - see [LICENSE](LICENSE) file for details
 - **NextAuth** - Authentication
 - **shadcn/ui** - UI components
 - **Biome** - Fast linting & formatting
-
----
-
-## 📧 Contact
-
-**Repository**: https://github.com/edgarberlinck/event.me
-
-**Issues**: https://github.com/edgarberlinck/event.me/issues
-
-**Maintainer**: Edgar Muniz Berlinck
 
 ---
 

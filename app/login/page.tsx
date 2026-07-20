@@ -44,7 +44,7 @@ export default function LoginPage() {
       </Suspense>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Event.me</CardTitle>
+          <CardTitle className="text-3xl font-bold">Let&apos;s Event</CardTitle>
           <CardDescription>
             Sign in to manage your scheduling and bookings
           </CardDescription>
@@ -87,7 +87,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                New to Event.me?
+                New to Let&apos;s Event?
               </span>
             </div>
           </div>

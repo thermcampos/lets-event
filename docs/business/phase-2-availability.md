@@ -32,7 +32,7 @@ Users need to define when they're available for meetings. Without this, the book
 ⏱️ Time: 15-30 minutes per booking
 ```
 
-**After** (Event.me):
+**After** (Let's Event):
 ```
 1. Consultant configures availability once:
    - Monday-Friday: 9 AM - 5 PM
@@ -218,7 +218,7 @@ Users need to define when they're available for meetings. Without this, the book
 ## 📊 Competitive Analysis
 
 ### vs. Calendly
-| Feature | Event.me | Calendly |
+| Feature | Let's Event | Calendly |
 |---------|----------|----------|
 | Setup time | ~2 min | ~5 min |
 | Interface complexity | Simple | Feature-rich |
@@ -228,7 +228,7 @@ Users need to define when they're available for meetings. Without this, the book
 **Our Advantage**: Faster, simpler for basic use cases
 
 ### vs. Cal.com
-| Feature | Event.me | Cal.com |
+| Feature | Let's Event | Cal.com |
 |---------|----------|----------|
 | Hosting | Managed | Self-host or managed |
 | Setup | Instant | Technical setup |

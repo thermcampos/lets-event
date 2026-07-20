@@ -8,8 +8,13 @@ export default function TermsOfUsePage() {
       <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <Link href="/" className="flex items-center space-x-2">
-            <Image src="/logo.png" alt="Event.me" width={40} height={40} />
-            <span className="text-xl font-bold">Event.me</span>
+            <Image
+              src="/logo.png"
+              alt="Let's Event"
+              width={40}
+              height={40}
+            />
+            <span className="text-xl font-bold">Let&apos;s Event</span>
           </Link>
         </div>
       </header>
@@ -28,19 +33,19 @@ export default function TermsOfUsePage() {
                 1. Acceptance of Terms
               </h2>
               <p className="text-muted-foreground">
-                By creating an account or using Event.me, you agree to these
-                Terms of Use. If you do not agree, do not use the service.
+                By creating an account or using Let&apos;s Event, you agree to
+                these Terms of Use. If you do not agree, do not use the service.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold mb-3">
-                2. What Event.me Is
+                2. What Let&apos;s Event Is
               </h2>
               <p className="text-muted-foreground">
-                Event.me is a scheduling platform. It lets you define your
-                availability, create bookable event types, and share a link so
-                others can book time with you. Optionally, you can connect a
+                Let&apos;s Event is a scheduling platform. It lets you define
+                your availability, create bookable event types, and share a link
+                so others can book time with you. Optionally, you can connect a
                 Google Calendar to automatically check for conflicts and add
                 confirmed bookings.
               </p>
@@ -60,7 +65,9 @@ export default function TermsOfUsePage() {
                   You must provide accurate information when registering and
                   keep it up to date.
                 </li>
-                <li>You must be at least 13 years old to use Event.me.</li>
+                <li>
+                  You must be at least 13 years old to use Let&apos;s Event.
+                </li>
                 <li>
                   Notify us immediately if you believe your account has been
                   compromised.
@@ -80,7 +87,7 @@ export default function TermsOfUsePage() {
                 </li>
                 <li>
                   Reverse-engineer, scrape, or attempt to extract data from
-                  Event.me
+                  Let&apos;s Event
                 </li>
                 <li>
                   Interfere with or degrade the availability of the service
@@ -96,11 +103,12 @@ export default function TermsOfUsePage() {
                 5. Bookings and Cancellations
               </h2>
               <p className="text-muted-foreground">
-                Event.me facilitates scheduling between parties; it is not a
-                party to any meeting or appointment. You are solely responsible
-                for honoring, rescheduling, or cancelling your bookings.
-                Event.me is not liable for missed appointments, scheduling
-                conflicts, or disputes between bookers and hosts.
+                Let&apos;s Event facilitates scheduling between parties; it is
+                not a party to any meeting or appointment. You are solely
+                responsible for honoring, rescheduling, or cancelling your
+                bookings. Let&apos;s Event is not liable for missed
+                appointments, scheduling conflicts, or disputes between bookers
+                and hosts.
               </p>
             </section>
 
@@ -110,10 +118,10 @@ export default function TermsOfUsePage() {
               </h2>
               <p className="text-muted-foreground">
                 Connecting your Google Calendar is optional. When connected,
-                Event.me reads your calendar to check availability and writes
-                new bookings as calendar events. You can disconnect at any time
-                from your account settings. Your use of Google Calendar is also
-                governed by{" "}
+                Let&apos;s Event reads your calendar to check availability and
+                writes new bookings as calendar events. You can disconnect at
+                any time from your account settings. Your use of Google Calendar
+                is also governed by{" "}
                 <a
                   href="https://policies.google.com/terms"
                   className="underline"
@@ -131,12 +139,12 @@ export default function TermsOfUsePage() {
                 7. Intellectual Property
               </h2>
               <p className="text-muted-foreground">
-                You own the content you create on Event.me (event names,
-                descriptions, availability configurations). You grant Event.me a
-                limited license to store and display this content solely to
-                operate the service. The Event.me name, logo, and interface
-                design are our property and may not be reproduced without
-                permission.
+                You own the content you create on Let&apos;s Event (event names,
+                descriptions, availability configurations). You grant Let&apos;s
+                Event a limited license to store and display this content solely
+                to operate the service. The Let&apos;s Event name, logo, and
+                interface design are our property and may not be reproduced
+                without permission.
               </p>
             </section>
 
@@ -157,7 +165,7 @@ export default function TermsOfUsePage() {
                 9. Disclaimer of Warranties
               </h2>
               <p className="text-muted-foreground">
-                Event.me is provided &quot;as is&quot; and &quot;as
+                Let&apos;s Event is provided &quot;as is&quot; and &quot;as
                 available&quot; without warranties of any kind, express or
                 implied. We do not warrant that the service will be error-free,
                 secure, or uninterrupted, or that it will meet your specific
@@ -170,8 +178,8 @@ export default function TermsOfUsePage() {
                 10. Limitation of Liability
               </h2>
               <p className="text-muted-foreground">
-                To the maximum extent permitted by applicable law, Event.me
-                shall not be liable for any indirect, incidental, special,
+                To the maximum extent permitted by applicable law, Let&apos;s
+                Event shall not be liable for any indirect, incidental, special,
                 consequential, or punitive damages arising from your use of, or
                 inability to use, the service — including missed appointments,
                 data loss, or unauthorized access to your account.
@@ -210,8 +218,8 @@ export default function TermsOfUsePage() {
               <h2 className="text-xl font-semibold mb-3">13. Governing Law</h2>
               <p className="text-muted-foreground">
                 These terms are governed by applicable law. Any dispute arising
-                from these terms or your use of Event.me will be subject to the
-                exclusive jurisdiction of the competent courts.
+                from these terms or your use of Let&apos;s Event will be subject
+                to the exclusive jurisdiction of the competent courts.
               </p>
             </section>
 
@@ -243,7 +251,7 @@ export default function TermsOfUsePage() {
             </Link>
           </div>
           <p className="mt-2">
-            © {new Date().getFullYear()} Event.me. All rights reserved.
+            © {new Date().getFullYear()} Let&apos;s Event. All rights reserved.
           </p>
         </div>
       </footer>

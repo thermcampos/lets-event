@@ -1,4 +1,4 @@
-# Event.me - Technical Documentation
+# Let's Event - Technical Documentation
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@
 ## System Architecture
 
 ### Overview
-Event.me is a meeting scheduling application built with Next.js 16, using server-side rendering and server actions for optimal performance and user experience.
+Let's Event is a meeting scheduling application built with Next.js 16, using server-side rendering and server actions for optimal performance and user experience.
 
 ### Architecture Layers
 
@@ -613,12 +613,3 @@ npx prisma migrate reset
 6. Wait for CI to pass
 7. Request review
 
----
-
-## Support & Contact
-
-**Repository**: https://github.com/edgarberlinck/event.me
-
-**Issues**: https://github.com/edgarberlinck/event.me/issues
-
-**Maintainer**: Edgar Muniz Berlinck

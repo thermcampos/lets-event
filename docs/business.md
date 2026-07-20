@@ -2,7 +2,7 @@
 
 ## Product Overview
 
-Event.me is a simplified scheduling platform that enables professionals to share their availability and allow others to book meetings with them - similar to Calendly, but focused on simplicity and ease of use.
+Let's Event is a simplified scheduling platform that enables professionals to share their availability and allow others to book meetings with them - similar to Calendly, but focused on simplicity and ease of use.
 
 ## Key Value Propositions
 
@@ -70,7 +70,7 @@ Event.me is a simplified scheduling platform that enables professionals to share
 ### 4. Public Booking Pages
 **User Benefit**: Share professional booking links with anyone
 
-**URL Structure**: `event.me/{your-username}/{meeting-type}`
+**URL Structure**: `letsevent.com/{your-username}/{meeting-type}`
 
 **Booking Experience**:
 1. Guest visits your booking link
@@ -98,7 +98,7 @@ Event.me is a simplified scheduling platform that enables professionals to share
 ## User Workflows
 
 ### New User Onboarding
-1. Visit Event.me homepage
+1. Visit Let&apos;s Event homepage
 2. Click "Get Started"
 3. Create account with email/username
 4. Set up availability

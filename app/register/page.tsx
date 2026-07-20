@@ -63,7 +63,7 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Create Account</CardTitle>
-          <CardDescription>Get started with Event.me</CardDescription>
+          <CardDescription>Get started with Let&apos;s Event</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={handleRegister} className="space-y-4">

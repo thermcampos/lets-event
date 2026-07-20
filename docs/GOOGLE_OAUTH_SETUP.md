@@ -1,10 +1,10 @@
 # Google OAuth Setup Guide
 
-This guide explains how to set up Google OAuth for Event.me to enable Google Calendar integration and Google Meet link generation.
+This guide explains how to set up Google OAuth for Let's Event to enable Google Calendar integration and Google Meet link generation.
 
 ## Overview
 
-Event.me integrates with Google Calendar to:
+Let's Event integrates with Google Calendar to:
 - Automatically create calendar events when someone books with you
 - Generate Google Meet links for video conferencing
 - Send calendar invites to attendees
@@ -30,7 +30,7 @@ Event.me integrates with Google Calendar to:
    - Go to "APIs & Services" > "OAuth consent screen"
    - Choose "External" user type
    - Fill in the required information:
-     - App name: Event.me
+     - App name: Let's Event
      - User support email: your email
      - Developer contact: your email
    - Add scopes:

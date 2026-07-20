@@ -59,7 +59,9 @@ export function SettingsForm({ user, updateSettings }: SettingsFormProps) {
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">event.me/book/</span>
+          <span className="text-sm text-muted-foreground">
+            letsevent.com/book/
+          </span>
           <Input
             id="username"
             name="username"
@@ -71,7 +73,7 @@ export function SettingsForm({ user, updateSettings }: SettingsFormProps) {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Your public booking URL will be: event.me/book/
+          Your public booking URL will be: letsevent.com/book/
           {user?.username || "your-username"}
         </p>
       </div>

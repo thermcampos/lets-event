@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Event.me - Simple Scheduling",
+  title: "Let's Event - Simple Scheduling",
   description: "Schedule meetings with ease",
 };
 

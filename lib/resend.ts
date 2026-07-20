@@ -59,7 +59,7 @@ function wrapEmail(accentColor: string, body: string): string {
         <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;">
           <tr>
             <td style="padding-bottom:20px;text-align:center;">
-              <span style="font-size:20px;font-weight:700;color:#09090b;letter-spacing:-0.5px;">Event.me</span>
+              <span style="font-size:20px;font-weight:700;color:#09090b;letter-spacing:-0.5px;">Let&apos;s Event</span>
             </td>
           </tr>
           <tr>
@@ -78,7 +78,7 @@ function wrapEmail(accentColor: string, body: string): string {
           </tr>
           <tr>
             <td style="padding-top:20px;text-align:center;">
-              <p style="margin:0;color:#a1a1aa;font-size:12px;">Event.me &middot; Your scheduling made simple</p>
+              <p style="margin:0;color:#a1a1aa;font-size:12px;">Let&apos;s Event &middot; Your scheduling made simple</p>
             </td>
           </tr>
         </table>

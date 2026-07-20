@@ -8,8 +8,13 @@ export default function PrivacyPolicyPage() {
       <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <Link href="/" className="flex items-center space-x-2">
-            <Image src="/logo.png" alt="Event.me" width={40} height={40} />
-            <span className="text-xl font-bold">Event.me</span>
+            <Image
+              src="/logo.png"
+              alt="Let's Event"
+              width={40}
+              height={40}
+            />
+            <span className="text-xl font-bold">Let&apos;s Event</span>
           </Link>
         </div>
       </header>
@@ -26,7 +31,7 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-xl font-semibold mb-3">1. Overview</h2>
               <p className="text-muted-foreground">
-                Event.me is a scheduling tool that lets you share your
+                Let&apos;s Event is a scheduling tool that lets you share your
                 availability and accept bookings. We collect only what is
                 strictly necessary to provide this service. We do not run
                 analytics, sell data, or track your behavior.
@@ -90,15 +95,16 @@ export default function PrivacyPolicyPage() {
                 4. Third-Party Services
               </h2>
               <p className="text-muted-foreground mb-3">
-                Event.me is built on third-party infrastructure. Each provider
-                has its own privacy policy that applies to the data they handle.
+                Let&apos;s Event is built on third-party infrastructure. Each
+                provider has its own privacy policy that applies to the data
+                they handle.
               </p>
 
               <div className="space-y-4">
                 <div>
                   <h3 className="font-semibold text-foreground">Vercel</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Event.me is hosted on{" "}
+                    Let&apos;s Event is hosted on{" "}
                     <a
                       href="https://vercel.com"
                       className="underline"
@@ -143,7 +149,7 @@ export default function PrivacyPolicyPage() {
                     </code>{" "}
                     scope). We store the resulting OAuth tokens in our database
                     solely to perform calendar operations you initiate within
-                    Event.me.
+                    Let&apos;s Event.
                   </p>
                   <p className="text-muted-foreground text-sm mt-2">
                     <strong>
@@ -165,7 +171,7 @@ export default function PrivacyPolicyPage() {
                     >
                       Google account permissions
                     </a>{" "}
-                    or from your Event.me account settings. Refer to{" "}
+                    or from your Let&apos;s Event account settings. Refer to{" "}
                     <a
                       href="https://policies.google.com/privacy"
                       className="underline"
@@ -264,9 +270,9 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-xl font-semibold mb-3">8. Cookies</h2>
               <p className="text-muted-foreground">
-                Event.me uses a single session cookie to keep you authenticated.
-                No third-party tracking cookies, advertising pixels, or
-                analytics scripts are loaded.
+                Let&apos;s Event uses a single session cookie to keep you
+                authenticated. No third-party tracking cookies, advertising
+                pixels, or analytics scripts are loaded.
               </p>
             </section>
 
@@ -275,9 +281,10 @@ export default function PrivacyPolicyPage() {
                 9. Children's Privacy
               </h2>
               <p className="text-muted-foreground">
-                Event.me is not directed to individuals under 13. We do not
-                knowingly collect data from children. If you believe a child has
-                created an account, contact us and we will delete it promptly.
+                Let&apos;s Event is not directed to individuals under 13. We do
+                not knowingly collect data from children. If you believe a child
+                has created an account, contact us and we will delete it
+                promptly.
               </p>
             </section>
 
@@ -321,7 +328,7 @@ export default function PrivacyPolicyPage() {
             </Link>
           </div>
           <p className="mt-2">
-            © {new Date().getFullYear()} Event.me. All rights reserved.
+            © {new Date().getFullYear()} Let&apos;s Event. All rights reserved.
           </p>
         </div>
       </footer>

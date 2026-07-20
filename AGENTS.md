@@ -1,10 +1,10 @@
-# AGENTS.md - Event.me Developer Guide
+# AGENTS.md - Let's Event Developer Guide
 
-This guide documents essential context for AI agents working on the Event.me codebase.
+This guide documents essential context for AI agents working on the Let's Event codebase.
 
 ## Project Overview
 
-Event.me is a Calendly-like scheduling application built with Next.js 16, featuring:
+Let's Event is a Calendly-like scheduling application built with Next.js 16, featuring:
 - User authentication via NextAuth v5 (credentials + Google OAuth)
 - Availability management per user
 - Event type creation with booking constraints

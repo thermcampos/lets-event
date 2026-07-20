@@ -1,11 +1,11 @@
 # Google Calendar Integration Setup
 
 ## Overview
-This guide explains how to set up Google Calendar integration for Event.me. Users will be able to connect their Google Calendar to automatically sync bookings.
+This guide explains how to set up Google Calendar integration for Let's Event. Users will be able to connect their Google Calendar to automatically sync bookings.
 
 ## Prerequisites
 - A Google Cloud Console account
-- Owner/Admin access to the Event.me application
+- Owner/Admin access to the Let's Event application
 
 ## Step 1: Create Google Cloud Project
 
@@ -24,7 +24,7 @@ This guide explains how to set up Google Calendar integration for Event.me. User
 1. Go to **APIs & Services** > **OAuth consent screen**
 2. Choose **External** user type (unless you have a Google Workspace)
 3. Fill in the required information:
-   - **App name**: Event.me
+   - **App name**: Let's Event
    - **User support email**: Your email
    - **Developer contact information**: Your email
 4. Click **Save and Continue**
@@ -43,7 +43,7 @@ This guide explains how to set up Google Calendar integration for Event.me. User
 2. Click **+ CREATE CREDENTIALS** > **OAuth client ID**
 3. Choose **Web application**
 4. Configure:
-   - **Name**: Event.me Web Client
+   - **Name**: Let's Event Web Client
    - **Authorized JavaScript origins**:
      - `http://localhost:3000` (for development)
      - `https://yourdomain.com` (for production)
@@ -76,14 +76,14 @@ Also update `.env.example` with placeholder values.
 
 ## User Flow
 
-1. User logs into Event.me
+1. User logs into Let's Event
 2. User goes to Settings page
 3. User clicks "Connect Google Calendar" button
 4. User is redirected to Google OAuth consent screen
 5. User grants calendar permissions
-6. User is redirected back to Event.me
+6. User is redirected back to Let's Event
 7. Access token is saved to database (Account model)
-8. When a booking is created, Event.me creates a calendar event using the stored access token
+8. When a booking is created, Let's Event creates a calendar event using the stored access token
 
 ## Token Refresh
 

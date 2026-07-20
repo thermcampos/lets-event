@@ -149,7 +149,7 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>Quick Start</CardTitle>
             <CardDescription>
-              Get started with Event.me in 3 simple steps
+              Get started with Let&apos;s Event in 3 simple steps
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

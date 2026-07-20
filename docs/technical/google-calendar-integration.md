@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Google Calendar integration allows Event.me to:
+The Google Calendar integration allows Let's Event to:
 - Automatically create calendar events when bookings are made
 - Generate Google Meet links for virtual meetings
 - Check for calendar conflicts before accepting bookings
@@ -47,10 +47,10 @@ The Google Calendar integration allows Event.me to:
 
 ### 2. Connect Your Calendar
 
-1. Log in to your Event.me account
+1. Log in to your Let's Event account
 2. Go to Dashboard > Integrations
 3. Click "Connect" on the Google Calendar card
-4. Authorize Event.me to access your Google Calendar
+4. Authorize Let's Event to access your Google Calendar
 5. You'll be redirected back to the Integrations page with a "Connected" status
 
 ## How It Works

@@ -1,4 +1,4 @@
-# Event.me - Business Documentation
+# Let's Event - Business Documentation
 
 ## Table of Contents
 
@@ -16,9 +16,9 @@
 
 ## Product Overview
 
-### What is Event.me?
+### What is Let's Event?
 
-Event.me is a **meeting scheduling platform** that eliminates the back-and-forth of finding meeting times. Users share their availability, and others can book time slots directly—simple, fast, and professional.
+Let's Event is a **meeting scheduling platform** that eliminates the back-and-forth of finding meeting times. Users share their availability, and others can book time slots directly—simple, fast, and professional.
 
 ### The Problem
 
@@ -30,7 +30,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 
 ### The Solution
 
-**Event.me offers**:
+**Let's Event offers**:
 - ✅ One-click booking: Share a link, others book directly
 - ✅ Smart scheduling: Only show available time slots
 - ✅ Zero setup time: Create account → Set availability → Share link
@@ -51,7 +51,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 - Eliminate scheduling overhead
 - Focus on billable work, not admin
 
-**Example**: A freelance designer shares their Event.me link in email signatures. Clients book 30-minute consultations directly, no back-and-forth needed.
+**Example**: A freelance designer shares their Let's Event link in email signatures. Clients book 30-minute consultations directly, no back-and-forth needed.
 
 ### For Small Businesses
 
@@ -60,7 +60,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 - Reduce no-shows with automated reminders
 - Professional brand image
 
-**Example**: A marketing agency uses Event.me for discovery calls. Leads book directly from the website, reducing response time from days to minutes.
+**Example**: A marketing agency uses Let's Event for discovery calls. Leads book directly from the website, reducing response time from days to minutes.
 
 ### For Job Seekers
 
@@ -69,7 +69,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 - Show professionalism
 - Stand out from other applicants
 
-**Example**: A job seeker includes Event.me link in applications. Recruiters appreciate the convenience, leading to faster interview scheduling.
+**Example**: A job seeker includes Let's Event link in applications. Recruiters appreciate the convenience, leading to faster interview scheduling.
 
 ---
 
@@ -153,7 +153,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 **Why**: Core user flow—this is the product
 **User Story**: "As a freelancer, I want to share my booking link so clients can schedule themselves."
 
-**URL Format**: `event.me/book/username`
+**URL Format**: `letsevent.com/book/username`
 
 ### Phase 3: Enhanced Experience
 
@@ -219,7 +219,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
    ↓ Name: "Quick Chat", Duration: 15 min
    
 6. Get booking link
-   ↓ event.me/book/john-doe
+   ↓ letsevent.com/book/john-doe
    
 7. Share link
    ↓ Email signature, LinkedIn, website
@@ -280,13 +280,13 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 - 1 event type
 - 10 bookings/month
 - Basic availability
-- Event.me branding on booking page
+- Let's Event branding on booking page
 
 **Pro Tier** ($15/month):
 - Unlimited event types
 - Unlimited bookings
 - Calendar integrations
-- Remove Event.me branding
+- Remove Let's Event branding
 - Custom booking questions
 - Email reminders
 
@@ -363,7 +363,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 
 ### Positioning
 
-**Event.me = "The Simple Calendly"**
+**Let's Event = "The Simple Calendly"**
 
 - Fewer features, but **faster** and **easier**
 - **Lower price point** for solo users
@@ -525,7 +525,7 @@ Event.me is a **meeting scheduling platform** that eliminates the back-and-forth
 
 ### Elevator Pitch (30 seconds)
 
-> "Event.me is the fastest way to schedule meetings. No more email tennis—just share your link and let people book directly into your calendar. We're like Calendly, but simpler and more affordable. Perfect for consultants, freelancers, and anyone who schedules meetings regularly."
+> "Let's Event is the fastest way to schedule meetings. No more email tennis—just share your link and let people book directly into your calendar. We&apos;re like Calendly, but simpler and more affordable. Perfect for consultants, freelancers, and anyone who schedules meetings regularly."
 
 ### Homepage Headlines (A/B Test Options)
 
@@ -549,7 +549,7 @@ Say: **"Schedule globally without the math"**
 
 ## Customer Testimonials (Aspirational)
 
-> "Event.me saved me 5 hours a week. I just share my link and clients book themselves. Game-changer for my consulting business."
+> "Let's Event saved me 5 hours a week. I just share my link and clients book themselves. Game-changer for my consulting business."
 > 
 > — Sarah Chen, Marketing Consultant
 
@@ -557,7 +557,7 @@ Say: **"Schedule globally without the math"**
 >
 > — Marcus Johnson, Career Coach
 
-> "We tried Calendly but it was overkill. Event.me gives us exactly what we need, nothing more."
+> "We tried Calendly but it was overkill. Let's Event gives us exactly what we need, nothing more."
 >
 > — Amanda Torres, Startup Founder
 
@@ -612,7 +612,7 @@ A: Speed, simplicity, and price. Plus, switching costs increase over time (integ
 
 ## Conclusion
 
-Event.me addresses a real pain point with a simple, elegant solution. The market is proven (Calendly does $100M+ ARR), and there's room for a more accessible alternative.
+Let's Event addresses a real pain point with a simple, elegant solution. The market is proven (Calendly does $100M+ ARR), and there's room for a more accessible alternative.
 
 **Next Steps**:
 1. Complete Phase 2 features (availability, event types, booking pages)
