@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Let's Event",
+  title: "Lets Event",
   description: "Schedule meetings with ease",
   icons: {
     icon: [
