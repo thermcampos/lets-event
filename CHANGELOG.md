@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-07-28
+
+### Changed
+- A few more places with old name got updated to match the new name Let's Event.
+
 ## 2026-07-20
 
 ### Changed

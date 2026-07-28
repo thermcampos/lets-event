@@ -10,7 +10,7 @@ Let&apos;s Event is a lightweight alternative to Calendly. Share your availabili
 
 ```bash
 # Clone repository
-git clone git@github.com:edgarberlinck/event.me.git
+git [clone git@github.com:edgarberlinck/event.me.git](https://lightroasted.vps-kinghost.net/rmcampos/event.me)
 cd event.me
 
 # Install dependencies
