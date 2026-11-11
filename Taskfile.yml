@@ -1,0 +1,87 @@
+version: "3"
+
+# Quality gate for Let's Event.
+#
+# `task quality` runs every check that works without a database:
+# dependency check -> typecheck -> lint -> unit tests -> production build.
+# E2E is opt-in (`task test:e2e`) because it needs Postgres and browsers.
+# Tasks shell out to npm scripts so CI, hooks, and the gate stay in sync.
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: Install dependencies (npm ci)
+    cmds:
+      - npm ci
+
+  deps:
+    desc: Check that dependencies are installed
+    internal: true
+    preconditions:
+      - sh: test -d node_modules
+        msg: "node_modules is missing - run 'task setup' first"
+
+  typecheck:
+    desc: Generate Next.js types, then type-check with tsc
+    deps: [deps]
+    cmds:
+      - npx next typegen
+      - npm run typecheck
+
+  lint:
+    desc: Check code with Biome
+    deps: [deps]
+    cmds:
+      - npm run lint
+
+  format:
+    desc: Format code with Biome (write mode, not part of the gate)
+    deps: [deps]
+    cmds:
+      - npm run format
+
+  test:unit:
+    desc: Run unit tests (Vitest)
+    deps: [deps]
+    cmds:
+      - npm run test:unit
+
+  test:e2e:
+    desc: Run E2E tests (Playwright, starts Postgres first)
+    deps: [db:up]
+    cmds:
+      - npm test
+
+  db:up:
+    desc: Start Postgres and wait until it is healthy
+    cmd: docker compose up -d
+
+  db:down:
+    desc: Stops Postgres and tear it down
+    cmd: docker compose down -v --remove-orphans
+
+  e2e:setup:
+    desc: "One-time E2E setup: start Postgres, install Playwright browsers"
+    cmds:
+      - docker compose up -d
+      - npx playwright install --with-deps
+
+  build:
+    desc: Production build (next build)
+    deps: [deps]
+    cmds:
+      - npm run build
+
+  quality:
+    desc: Run the full quality gate (typecheck, lint, unit tests, build)
+    deps: [deps]
+    cmds:
+      - task: typecheck
+      - task: lint
+      - task: test:unit
+      - task: build

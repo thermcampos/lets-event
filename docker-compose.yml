@@ -1,7 +1,7 @@
 services:
-  postgres:
+  letsevent-db:
     image: postgres:16-alpine
-    container_name: eventme-db
+    container_name: letsevent-db
     restart: unless-stopped
     ports:
       - "55002:5432"

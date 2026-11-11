@@ -37,7 +37,7 @@ describe("Resend Email Notifications", () => {
 
       expect(mockSend).toHaveBeenCalledOnce();
       const call = mockSend.mock.calls[0][0];
-      expect(call.from).toBe("onboarding@resend.dev");
+      expect(call.from).toBe("Let's Event <no-reply@lets-event.online>");
       expect(call.to).toBe("user@example.com");
       expect(call.subject).toContain("New Booking");
       expect(call.subject).toContain("30 Minute Meeting");
@@ -73,7 +73,7 @@ describe("Resend Email Notifications", () => {
 
       expect(mockSend).toHaveBeenCalledOnce();
       const call = mockSend.mock.calls[0][0];
-      expect(call.from).toBe("onboarding@resend.dev");
+      expect(call.from).toBe("Let's Event <no-reply@lets-event.online>");
       expect(call.to).toBe("user@example.com");
       expect(call.subject).toContain("Cancelled");
       expect(call.subject).toContain("30 Minute Meeting");
@@ -93,11 +93,11 @@ describe("Resend Email Notifications", () => {
 
       expect(mockSend).toHaveBeenCalledOnce();
       const call = mockSend.mock.calls[0][0];
-      expect(call.from).toBe("onboarding@resend.dev");
+      expect(call.from).toBe("Let's Event <no-reply@lets-event.online>");
       expect(call.to).toBe("user@example.com");
       expect(call.subject).toContain("Rescheduled");
-      expect(call.html).toContain("Previous Time");
-      expect(call.html).toContain("New Start");
+      expect(call.html).toContain("Previous time");
+      expect(call.html).toContain("New time");
     });
   });
 
@@ -110,7 +110,7 @@ describe("Resend Email Notifications", () => {
 
       expect(mockSend).toHaveBeenCalledOnce();
       const call = mockSend.mock.calls[0][0];
-      expect(call.from).toBe("onboarding@resend.dev");
+      expect(call.from).toBe("Let's Event <no-reply@lets-event.online>");
       expect(call.to).toBe("user@example.com");
       expect(call.subject).toContain("Confirmed");
       expect(call.html).toContain("confirmed");
