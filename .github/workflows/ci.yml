@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
 
 env:
   RESEND_APIKEY: "any-api-key-for-ci"
@@ -10,14 +12,14 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: easynode-debian
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Cache npm dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
@@ -25,10 +27,16 @@ jobs:
             ${{ runner.os }}-npm- 
       
       - name: Install dependencies
-        run: npm i 
+        run: npm i
+
+      - name: Run Typecheck
+        run: npm run typecheck
 
       - name: Run lint
         run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Build application
         run: npm run build

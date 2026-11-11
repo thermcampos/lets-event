@@ -267,3 +267,13 @@ npx prisma migrate dev --name [description]
 - Prisma docs: https://www.prisma.io/docs
 - shadcn/ui: https://ui.shadcn.com/
 - Playwright: https://playwright.dev/
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked as GitHub issues in this repo (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.

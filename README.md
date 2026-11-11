@@ -75,10 +75,24 @@ npm run build        # Production build
 npm start            # Start production server
 npm run lint         # Check code quality (Biome)
 npm run format       # Format code (Biome)
+npm run typecheck    # Type-check without emitting (tsc --noEmit)
 npm test             # Run E2E tests (Playwright)
+npm run test:unit    # Run unit tests (Vitest)
 npm run test:ui      # Playwright UI mode
 npm run db:studio    # Open Prisma Studio
 ```
+
+### Quality Gate (Taskfile)
+
+With [go-task](https://taskfile.dev) installed (v3.40+), a single command runs every check that works without a database:
+
+```bash
+task quality         # deps -> typecheck -> lint -> unit tests -> build (fail-fast)
+task                 # List all available tasks
+task test:e2e        # E2E tests (starts Postgres, needs browsers: task e2e:setup)
+```
+
+The tasks wrap the npm scripts above, so the gate stays in sync with CI and hooks. Note: the gate does not run E2E tests, so a green `task quality` does not cover the booking flow - run `task test:e2e` when touching it.
 
 ---
 
