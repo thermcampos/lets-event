@@ -10,14 +10,14 @@ on:
 jobs:
   deploy:
     name: Deploy to Vercel
-    runs-on: easynode-debian
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Cache npm dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
