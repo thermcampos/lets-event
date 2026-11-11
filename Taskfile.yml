@@ -75,7 +75,7 @@ tasks:
     desc: Production build (next build)
     deps: [deps]
     cmds:
-      - npm run build
+      - export RESEND_APIKEY="any-api-key-for-dev" && npm run build
 
   quality:
     desc: Run the full quality gate (typecheck, lint, unit tests, build)
