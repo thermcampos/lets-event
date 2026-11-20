@@ -35,6 +35,9 @@ export default defineConfig({
   /* Increase test timeout */
   timeout: 60000,
 
+  /* `next dev` compiles routes on first hit, which can exceed the 5s default */
+  expect: { timeout: 15000 },
+
   /* Configure projects for major browsers */
   projects: [
     {

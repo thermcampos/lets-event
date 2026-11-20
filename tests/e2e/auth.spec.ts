@@ -1,15 +1,11 @@
 import { expect, test } from "@playwright/test";
-
-// Generate unique test data for each test run
-function generateTestUser() {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(7);
-  return {
-    name: "Test User",
-    email: `test-${timestamp}-${random}@example.com`,
-    password: "Test123456!",
-  };
-}
+import {
+  fillRegisterForm,
+  generateTestUser,
+  login,
+  register,
+  registerAndLogin,
+} from "./helpers";
 
 test.describe("Authentication Flow", () => {
   test("should display landing page", async ({ page }) => {
@@ -35,175 +31,78 @@ test.describe("Authentication Flow", () => {
   });
 
   test("should register a new user and redirect to login", async ({ page }) => {
-    const user = generateTestUser();
-
-    await page.goto("/register");
-
-    // Fill registration form
-    await page.getByLabel("Name").fill(user.name);
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(`user${Date.now()}`);
-    await page.getByLabel("Password").fill(user.password);
-
-    // Submit form
-    await page.getByRole("button", { name: "Create Account" }).click();
-
-    // Should redirect to login
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+    await register(page, generateTestUser());
   });
 
   test("should not allow duplicate email registration", async ({ page }) => {
     const user = generateTestUser();
-    const username = `user${Date.now()}`;
+    await register(page, user);
 
-    // Register first time
-    await page.goto("/register");
-    await page.getByLabel("Name").fill(user.name);
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(username);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Create Account" }).click();
-
-    // Wait for redirect to login
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-
-    // Try to register again with same email
-    await page.goto("/register");
-    await page.getByLabel("Name").fill("Another User");
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(`other${Date.now()}`);
-    await page.getByLabel("Password").fill("AnotherPass123");
-    await page.getByRole("button", { name: "Create Account" }).click();
-
-    // Should stay on register page with error in URL
-    await expect(page).toHaveURL(/\/register\?error=exists/, {
-      timeout: 10000,
+    // Same email, different username
+    await fillRegisterForm(page, {
+      ...generateTestUser("Another User"),
+      email: user.email,
     });
+
+    await expect(page).toHaveURL(/\/register\?error=exists/);
   });
 
   test("should login with valid credentials", async ({ page }) => {
-    const user = generateTestUser();
+    const user = await registerAndLogin(page);
 
-    // First register
-    await page.goto("/register");
-    await page.getByLabel("Name").fill(user.name);
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(user.email.split("@")[0]);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Create Account" }).click();
-
-    // Wait for redirect
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-
-    // Now login
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Sign In" }).click();
-
-    // Should redirect to dashboard
-    await expect(page).toHaveURL("/dashboard", { timeout: 10000 });
-    await expect(page.getByText("Dashboard")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Dashboard", level: 1 }),
+    ).toBeVisible();
     await expect(page.getByText(user.email)).toBeVisible();
   });
 
   test("should not login with invalid password", async ({ page }) => {
     const user = generateTestUser();
+    await register(page, user);
 
-    // First register
-    await page.goto("/register");
-    await page.getByLabel("Name").fill(user.name);
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(user.email.split("@")[0]);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Create Account" }).click();
-
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-
-    // Try to login with wrong password
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Password").fill("wrongpassword");
+    await page.locator("#email").fill(user.email);
+    await page.locator("#password").fill("wrongpassword");
     await page.getByRole("button", { name: "Sign In" }).click();
 
-    // Should stay on login page with error
-    await expect(page).toHaveURL(/\/login\?error=invalid/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/login\?error=invalid/);
   });
 
   test("should not login with non-existent email", async ({ page }) => {
     await page.goto("/login");
 
-    await page.getByLabel("Email").fill("nonexistent@example.com");
-    await page.getByLabel("Password").fill("anypassword");
+    await page.locator("#email").fill("nonexistent@example.com");
+    await page.locator("#password").fill("anypassword");
     await page.getByRole("button", { name: "Sign In" }).click();
 
-    // Should stay on login page with error
-    await expect(page).toHaveURL(/\/login\?error=invalid/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/login\?error=invalid/);
   });
 
   test("should logout successfully", async ({ page }) => {
-    const user = generateTestUser();
+    await registerAndLogin(page);
 
-    // Register and login
-    await page.goto("/register");
-    await page.getByLabel("Name").fill(user.name);
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(user.email.split("@")[0]);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Create Account" }).click();
+    // The sign-out button is the only form button in the top navigation
+    await page.locator("nav form button[type='submit']").first().click();
 
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Sign In" }).click();
-
-    // Wait for dashboard
-    await expect(page).toHaveURL("/dashboard", { timeout: 10000 });
-
-    // Find and click logout button (it's a form with a button)
-    await page
-      .locator('form:has(button[type="submit"]:has(svg))')
-      .getByRole("button")
-      .click();
-
-    // Should redirect to home
-    await expect(page).toHaveURL("/", { timeout: 10000 });
+    await expect(page).toHaveURL("/");
   });
 
   test("should protect dashboard route when not logged in", async ({
     page,
   }) => {
-    // Try to access dashboard without login
     await page.goto("/dashboard");
 
-    // Should redirect to login
-    await expect(page).toHaveURL("/login", { timeout: 10000 });
+    await expect(page).toHaveURL("/login");
   });
 
   test("should redirect logged-in users from login page to dashboard", async ({
     page,
   }) => {
     const user = generateTestUser();
+    await register(page, user);
+    await login(page, user);
 
-    // Register and login
-    await page.goto("/register");
-    await page.getByLabel("Name").fill(user.name);
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Username").fill(user.email.split("@")[0]);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Create Account" }).click();
-
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-
-    await page.getByLabel("Email").fill(user.email);
-    await page.getByLabel("Password").fill(user.password);
-    await page.getByRole("button", { name: "Sign In" }).click();
-
-    await expect(page).toHaveURL("/dashboard", { timeout: 10000 });
-
-    // Try to go to login again
     await page.goto("/login");
 
-    // Should redirect back to dashboard
-    await expect(page).toHaveURL("/dashboard", { timeout: 10000 });
+    await expect(page).toHaveURL("/dashboard");
   });
 });

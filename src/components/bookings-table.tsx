@@ -41,12 +41,13 @@ export function BookingsTable({
     setCancelling(bookingId);
 
     try {
+      // The PATCH route reads multipart form data (it also accepts a PDF on completion)
+      const formData = new FormData();
+      formData.append("status", "cancelled");
+
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: formData,
       });
 
       if (!response.ok) {

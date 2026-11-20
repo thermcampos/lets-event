@@ -52,8 +52,16 @@ tasks:
     cmds:
       - npm run test:unit
 
+  # Chromium only by default: running all three browsers against `next dev`
+  # is too heavy for a small machine. Use test:e2e:all for the full matrix.
   test:e2e:
-    desc: "Run E2E tests in the Playwright Docker image (extra args after --, e.g. task test:e2e -- --project=chromium)"
+    desc: "Run E2E tests on Chromium in the Playwright Docker image (extra args after --, e.g. task test:e2e -- auth.spec.ts)"
+    cmds:
+      - task: test:e2e:run
+        vars: { ARGS: "--project=chromium {{.CLI_ARGS}}" }
+
+  test:e2e:all:
+    desc: "Run E2E tests on every browser (Chromium, Firefox, WebKit); extra args after --"
     cmds:
       - task: test:e2e:run
         vars: { ARGS: "{{.CLI_ARGS}}" }

@@ -1,160 +1,116 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+import { registerAndLogin, uniqueId } from "./helpers";
 
-function generateTestUser() {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(7);
-  return {
-    name: "Test User",
-    email: `test-${timestamp}-${random}@example.com`,
-    username: `testuser${timestamp}${random}`,
-    password: "Test123456!",
-  };
+type EventTypeInput = {
+  title: string;
+  duration: string;
+  description?: string;
+  maxBookingsPerWeek?: string;
+  minimumNoticeHours?: string;
+  maximumNoticeDays?: string;
+};
+
+async function createEventType(page: Page, input: EventTypeInput) {
+  await page.goto("/dashboard/event-types/new");
+  await page.locator("#title").fill(input.title);
+  await page.locator("#slug").fill(`event-${uniqueId()}`);
+  if (input.description) {
+    await page.locator("#description").fill(input.description);
+  }
+  await page.locator("#duration").fill(input.duration);
+  if (input.maxBookingsPerWeek) {
+    await page.locator("#maxBookingsPerWeek").fill(input.maxBookingsPerWeek);
+  }
+  if (input.minimumNoticeHours) {
+    await page.locator("#minimumNoticeHours").fill(input.minimumNoticeHours);
+  }
+  if (input.maximumNoticeDays) {
+    await page.locator("#maximumNoticeDays").fill(input.maximumNoticeDays);
+  }
+
+  // Use the role: the nav's sign-out button is also a submit button
+  await page.getByRole("button", { name: "Create Event Type" }).click();
+  await expect(page).toHaveURL("/dashboard/event-types");
+}
+
+/** The Card for a given event type on the list page. */
+function eventTypeCard(page: Page, title: string) {
+  return page.locator('[data-slot="card"]').filter({
+    has: page.locator('[data-slot="card-title"]', { hasText: title }),
+  });
 }
 
 test.describe("Event Type Constraints", () => {
-  let testUser: ReturnType<typeof generateTestUser>;
-
   test.beforeEach(async ({ page }) => {
-    // Register a new user for each test
-    testUser = generateTestUser();
-    await page.goto("/register");
-    await page
-      .getByRole("textbox", { name: "Name", exact: true })
-      .fill(testUser.name);
-    await page.getByRole("textbox", { name: "Email" }).fill(testUser.email);
-    await page
-      .getByRole("textbox", { name: "Username" })
-      .fill(testUser.username);
-    await page.getByLabel("Password").fill(testUser.password);
-    await page
-      .getByRole("button", { name: "Create Account" })
-      .click({ force: true });
-
-    await page.waitForTimeout(2000);
-
-    // Login
-    await page.goto("/login");
-    await page.getByLabel("Email").fill(testUser.email);
-    await page.getByLabel("Password").fill(testUser.password);
-    await page.getByRole("button", { name: "Sign In" }).click({ force: true });
-
-    await page.waitForTimeout(2000);
+    await registerAndLogin(page);
   });
 
   test("should create event type with booking constraints", async ({
     page,
   }) => {
-    const uniqueSlug = `limited-consultation-${Date.now()}`;
+    await createEventType(page, {
+      title: "Limited Consultation",
+      description: "Consultation with booking limits",
+      duration: "60",
+      maxBookingsPerWeek: "3",
+      minimumNoticeHours: "48",
+      maximumNoticeDays: "7",
+    });
 
-    // Navigate to create event type
-    await page.goto("/dashboard/event-types/new");
-
-    // Fill in basic details
-    await page.fill('input[name="title"]', "Limited Consultation");
-    await page.fill('input[name="slug"]', uniqueSlug);
-    await page.fill(
-      'textarea[name="description"]',
-      "Consultation with booking limits",
-    );
-    await page.fill('input[name="duration"]', "60");
-
-    // Fill in constraints
-    await page.fill('input[name="maxBookingsPerWeek"]', "3");
-    await page.fill('input[name="minimumNoticeHours"]', "48");
-    await page.fill('input[name="maximumNoticeDays"]', "7");
-
-    // Submit
-    await page.click('button[type="submit"]');
-
-    // Verify redirect to event types list
-    await page.waitForURL("/dashboard/event-types");
-
-    // Verify event type appears in list with constraints badges
-    await expect(page.locator("text=Limited Consultation")).toBeVisible();
-    await expect(page.locator("text=Max 3/week")).toBeVisible();
-    await expect(page.locator("text=48h notice")).toBeVisible();
-    await expect(page.locator("text=7 days max")).toBeVisible();
+    const card = eventTypeCard(page, "Limited Consultation");
+    await expect(card).toBeVisible();
+    await expect(card.getByText("Max 3/week")).toBeVisible();
+    await expect(card.getByText("48h notice")).toBeVisible();
+    await expect(card.getByText("7 days max")).toBeVisible();
   });
 
   test("should edit event type constraints", async ({ page }) => {
-    const uniqueSlug = `test-event-constraints-${Date.now()}`;
+    await createEventType(page, { title: "Test Event", duration: "30" });
 
-    // First create an event type
-    await page.goto("/dashboard/event-types/new");
-    await page.fill('input[name="title"]', "Test Event");
-    await page.fill('input[name="slug"]', uniqueSlug);
-    await page.fill('input[name="duration"]', "30");
-    await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard/event-types");
-
-    // Find and click edit button (look for the link with Edit icon)
-    await page
-      .locator(`a[href*="/dashboard/event-types/"][href$="/edit"]`)
-      .first()
+    await eventTypeCard(page, "Test Event")
+      .getByRole("link", { name: "Edit" })
       .click();
+    await expect(page).toHaveURL(/\/dashboard\/event-types\/.+\/edit/);
 
-    // Update constraints
-    await page.fill('input[name="maxBookingsPerWeek"]', "5");
-    await page.fill('input[name="minimumNoticeHours"]', "24");
-    await page.fill('input[name="maximumNoticeDays"]', "14");
+    await page.locator("#maxBookingsPerWeek").fill("5");
+    await page.locator("#minimumNoticeHours").fill("24");
+    await page.locator("#maximumNoticeDays").fill("14");
 
-    // Save
-    await page.click('button:has-text("Save Changes")');
-    await page.waitForURL("/dashboard/event-types");
+    await page.getByRole("button", { name: "Save Changes" }).click();
+    await expect(page).toHaveURL("/dashboard/event-types");
 
-    // Verify changes
-    await expect(page.locator("text=Max 5/week")).toBeVisible();
-    // 24h is default so it won't show badge
-    await expect(page.locator("text=14 days max")).toBeVisible();
+    const card = eventTypeCard(page, "Test Event");
+    await expect(card.getByText("Max 5/week")).toBeVisible();
+    // 24h is the default so no notice badge is shown
+    await expect(card.getByText(/\d+h notice/)).toHaveCount(0);
+    await expect(card.getByText("14 days max")).toBeVisible();
   });
 
   test("should display unlimited when no max bookings set", async ({
     page,
   }) => {
-    const uniqueSlug = `unlimited-event-${Date.now()}`;
+    await createEventType(page, { title: "Unlimited Event", duration: "30" });
 
-    await page.goto("/dashboard/event-types/new");
-    await page.fill('input[name="title"]', "Unlimited Event");
-    await page.fill('input[name="slug"]', uniqueSlug);
-    await page.fill('input[name="duration"]', "30");
-    // Don't fill maxBookingsPerWeek
-    await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard/event-types");
-
-    // Verify no "Max X/week" badge is shown
-    const eventCard = page.locator("text=Unlimited Event").locator("..");
-    await expect(eventCard.locator("text=/Max \\d+\\/week/")).not.toBeVisible();
+    const card = eventTypeCard(page, "Unlimited Event");
+    await expect(card).toBeVisible();
+    await expect(card.getByText(/Max \d+\/week/)).toHaveCount(0);
   });
 
   test("should show constraints in edit form", async ({ page }) => {
-    const uniqueSlug = `constrained-event-form-${Date.now()}`;
+    await createEventType(page, {
+      title: "Constrained Event",
+      duration: "45",
+      maxBookingsPerWeek: "2",
+      minimumNoticeHours: "72",
+      maximumNoticeDays: "10",
+    });
 
-    // Create event with constraints
-    await page.goto("/dashboard/event-types/new");
-    await page.fill('input[name="title"]', "Constrained Event");
-    await page.fill('input[name="slug"]', uniqueSlug);
-    await page.fill('input[name="duration"]', "45");
-    await page.fill('input[name="maxBookingsPerWeek"]', "2");
-    await page.fill('input[name="minimumNoticeHours"]', "72");
-    await page.fill('input[name="maximumNoticeDays"]', "10");
-    await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard/event-types");
-
-    // Navigate to edit (find the first edit link on the page)
-    await page
-      .locator(`a[href*="/dashboard/event-types/"][href$="/edit"]`)
-      .first()
+    await eventTypeCard(page, "Constrained Event")
+      .getByRole("link", { name: "Edit" })
       .click();
 
-    // Verify form shows current values
-    await expect(page.locator('input[name="maxBookingsPerWeek"]')).toHaveValue(
-      "2",
-    );
-    await expect(page.locator('input[name="minimumNoticeHours"]')).toHaveValue(
-      "72",
-    );
-    await expect(page.locator('input[name="maximumNoticeDays"]')).toHaveValue(
-      "10",
-    );
+    await expect(page.locator("#maxBookingsPerWeek")).toHaveValue("2");
+    await expect(page.locator("#minimumNoticeHours")).toHaveValue("72");
+    await expect(page.locator("#maximumNoticeDays")).toHaveValue("10");
   });
 });
