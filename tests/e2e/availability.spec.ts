@@ -1,36 +1,34 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+import { generateTestUser, registerAndLogin } from "./helpers";
+
+async function addAvailability(
+  page: Page,
+  day: string,
+  startTime: string,
+  endTime: string,
+) {
+  await page.selectOption("#dayOfWeek", day);
+  await page.fill("#startTime", startTime);
+  await page.fill("#endTime", endTime);
+  await page.getByRole("button", { name: "Add Availability" }).click();
+  // The server action re-renders the same URL, so wait for the new slot itself
+  await expect(page.getByText(`${startTime} - ${endTime}`)).toBeVisible();
+}
 
 test.describe("Availability Management", () => {
   test.beforeEach(async ({ page }) => {
-    // Register
-    const timestamp = Date.now();
-    const email = `availability-test-${timestamp}@example.com`;
-    const password = "TestPassword123!";
-
-    await page.goto("/register");
-    await page.fill('input[name="name"]', "Availability Test User");
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="username"]', `availuser${timestamp}`);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-
-    // Wait for redirect to login
-    await page.waitForURL(/\/login/);
-
-    // Now login
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-
-    // Wait for redirect to dashboard
-    await expect(page).toHaveURL("/dashboard");
+    await registerAndLogin(page, generateTestUser("Availability Test User"));
   });
 
   test("should navigate to availability page from dashboard", async ({
     page,
   }) => {
     // Click on availability link
-    await page.click('a[href="/dashboard/availability"]');
+    await page
+      .getByRole("navigation")
+      .getByRole("link", { name: "Availability" })
+      .first()
+      .click();
 
     // Verify we're on the availability page
     await expect(page).toHaveURL("/dashboard/availability");
@@ -43,82 +41,44 @@ test.describe("Availability Management", () => {
     await page.goto("/dashboard/availability");
 
     // Check empty state message
-    await expect(page.locator("text=No availability set yet")).toBeVisible();
+    await expect(page.getByText("No availability set yet")).toBeVisible();
   });
 
   test("should add new availability slot", async ({ page }) => {
     await page.goto("/dashboard/availability");
-
-    // Fill the form
-    await page.selectOption('select[name="dayOfWeek"]', "1"); // Monday
-    await page.fill('input[name="startTime"]', "09:00");
-    await page.fill('input[name="endTime"]', "17:00");
-
-    // Submit form
-    await page.click('button[type="submit"]:has-text("Add Availability")');
-
-    // Wait for redirect and page load
-    await page.waitForURL("/dashboard/availability");
-    await page.waitForLoadState("networkidle");
-
-    // Verify the availability was added
-    await expect(page.getByText("09:00 - 17:00")).toBeVisible();
+    await addAvailability(page, "1", "09:00", "17:00"); // Monday
+    await expect(page.getByText("No availability set yet")).toHaveCount(0);
   });
 
   test("should add multiple availability slots", async ({ page }) => {
     await page.goto("/dashboard/availability");
 
-    // Add Monday
-    await page.selectOption('select[name="dayOfWeek"]', "1");
-    await page.fill('input[name="startTime"]', "09:00");
-    await page.fill('input[name="endTime"]', "12:00");
-    await page.click('button[type="submit"]:has-text("Add Availability")');
-    await page.waitForURL("/dashboard/availability");
-    await page.waitForLoadState("networkidle");
+    await addAvailability(page, "1", "09:00", "12:00"); // Monday
+    await addAvailability(page, "3", "14:00", "18:00"); // Wednesday
 
-    // Add Wednesday
-    await page.selectOption('select[name="dayOfWeek"]', "3");
-    await page.fill('input[name="startTime"]', "14:00");
-    await page.fill('input[name="endTime"]', "18:00");
-    await page.click('button[type="submit"]:has-text("Add Availability")');
-    await page.waitForURL("/dashboard/availability");
-    await page.waitForLoadState("networkidle");
-
-    // Verify both slots exist
     await expect(page.getByText("09:00 - 12:00")).toBeVisible();
     await expect(page.getByText("14:00 - 18:00")).toBeVisible();
   });
 
   test("should delete availability slot", async ({ page }) => {
     await page.goto("/dashboard/availability");
+    await addAvailability(page, "2", "10:00", "16:00"); // Tuesday
 
-    // Add a slot
-    await page.selectOption('select[name="dayOfWeek"]', "2"); // Tuesday
-    await page.fill('input[name="startTime"]', "10:00");
-    await page.fill('input[name="endTime"]', "16:00");
-    await page.click('button[type="submit"]:has-text("Add Availability")');
-    await page.waitForURL("/dashboard/availability");
-    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: "Delete" }).click();
 
-    // Verify it was added
-    await expect(page.getByText("10:00 - 16:00")).toBeVisible();
-
-    // Delete it
-    await page.click('button:has-text("Delete")');
-
-    // Wait for redirect and load
-    await page.waitForURL("/dashboard/availability");
-    await page.waitForLoadState("networkidle");
-
-    // Verify empty state is back
-    await expect(page.locator("text=No availability set yet")).toBeVisible();
+    await expect(page.getByText("No availability set yet")).toBeVisible();
+    await expect(page.getByText("10:00 - 16:00")).toHaveCount(0);
   });
 
   test("should navigate back to dashboard", async ({ page }) => {
     await page.goto("/dashboard/availability");
 
     // Click Dashboard nav link
-    await page.click('a[href="/dashboard"]');
+    await page
+      .getByRole("navigation")
+      .getByRole("link", { name: "Dashboard" })
+      .first()
+      .click();
 
     // Verify we're on dashboard
     await expect(page).toHaveURL("/dashboard");
@@ -191,14 +151,7 @@ test.describe("Availability Management", () => {
   test("should persist availability across sessions", async ({ page }) => {
     await page.goto("/dashboard/availability");
 
-    // Add availability
-    await page.selectOption('select[name="dayOfWeek"]', "5"); // Friday
-    await page.fill('input[name="startTime"]', "08:00");
-    await page.fill('input[name="endTime"]', "12:00");
-    await page.click('button[type="submit"]:has-text("Add Availability")');
-
-    // Verify it's there
-    await expect(page.getByText("08:00 - 12:00")).toBeVisible();
+    await addAvailability(page, "5", "08:00", "12:00"); // Friday
 
     // Reload page
     await page.reload();

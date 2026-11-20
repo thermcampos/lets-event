@@ -89,7 +89,8 @@ With [go-task](https://taskfile.dev) installed (v3.40+), a single command runs e
 ```bash
 task quality         # deps -> typecheck -> lint -> unit tests -> build (fail-fast)
 task                 # List all available tasks
-task test:e2e        # E2E tests in the Playwright Docker image (only Docker needed)
+task test:e2e        # E2E tests on Chromium in the Playwright Docker image (only Docker needed)
+task test:e2e:all    # E2E tests on every browser
 ```
 
 The tasks wrap the npm scripts above, so the gate stays in sync with CI and hooks. Note: the gate does not run E2E tests, so a green `task quality` does not cover the booking flow - run `task test:e2e` when touching it.
@@ -145,8 +146,9 @@ The tasks wrap the npm scripts above, so the gate stays in sync with CI and hook
 E2E runs inside the official Playwright Docker image (`mcr.microsoft.com/playwright`), against the compose Postgres - no browsers or system packages are installed on the host:
 
 ```bash
-task test:e2e                                  # All tests, all browsers
-task test:e2e -- --project=chromium            # Extra Playwright args after --
+task test:e2e                                  # All tests, Chromium only
+task test:e2e:all                              # All tests, all browsers
+task test:e2e:all -- --project=firefox         # Extra Playwright args after --
 task test:e2e -- tests/e2e/auth.spec.ts        # A single spec
 task test:e2e:report                           # Open the last HTML report
 ```

@@ -47,7 +47,8 @@ npm run lint             # Check with Biome
 npm run format           # Format with Biome
 
 # Testing
-task test:e2e            # E2E tests in the Playwright Docker image (args after --)
+task test:e2e            # E2E tests on Chromium in the Playwright Docker image (args after --)
+task test:e2e:all        # E2E tests on every browser
 npm run test:ui          # Playwright UI mode
 npm run test:headed      # Playwright headed mode
 npm run test:debug       # Playwright debug mode

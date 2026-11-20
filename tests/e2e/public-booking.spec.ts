@@ -1,25 +1,21 @@
 import { expect, test } from "@playwright/test";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma.server";
+import {
+  createDbUser,
+  deleteDbUser,
+  expectNotFound,
+  uniqueId,
+} from "./helpers";
 
 test.describe("Public Booking Flow", () => {
-  const uniqueId = Date.now();
-  const testUsername = `bookuser${uniqueId}`;
   let testUserId: string;
+  let testUsername: string;
   let testEventTypeSlug: string;
 
   test.beforeAll(async () => {
-    const hashedPassword = await bcrypt.hash("TestPassword123!", 10);
-
-    const user = await prisma.user.create({
-      data: {
-        name: "Booking Test User",
-        email: `booking-${uniqueId}@test.com`,
-        username: testUsername,
-        password: hashedPassword,
-      },
-    });
+    const user = await createDbUser("Booking Test User");
     testUserId = user.id;
+    testUsername = user.username;
 
     await prisma.availability.createMany({
       data: [
@@ -42,7 +38,7 @@ test.describe("Public Booking Flow", () => {
       data: {
         userId: testUserId,
         title: "Test Meeting",
-        slug: `test-meeting-${uniqueId}`,
+        slug: `test-meeting-${uniqueId()}`,
         description: "A test meeting for E2E tests",
         duration: 30,
         active: true,
@@ -52,25 +48,14 @@ test.describe("Public Booking Flow", () => {
   });
 
   test.afterAll(async () => {
-    await prisma.booking.deleteMany({
-      where: { userId: testUserId },
-    });
-    await prisma.eventType.deleteMany({
-      where: { userId: testUserId },
-    });
-    await prisma.availability.deleteMany({
-      where: { userId: testUserId },
-    });
-    await prisma.user.delete({
-      where: { id: testUserId },
-    });
+    await deleteDbUser(testUserId);
   });
 
   test("should display public booking page", async ({ page }) => {
     await page.goto(`/${testUsername}/${testEventTypeSlug}`);
 
     await expect(page.getByText("Booking Test User")).toBeVisible();
-    await expect(page.getByText("Test Meeting")).toBeVisible();
+    await expect(page.getByText("Test Meeting", { exact: true })).toBeVisible();
     await expect(page.getByText("30 minutes")).toBeVisible();
     await expect(page.getByText("A test meeting for E2E tests")).toBeVisible();
   });
@@ -79,8 +64,8 @@ test.describe("Public Booking Flow", () => {
     await page.goto(`/${testUsername}/${testEventTypeSlug}`);
 
     await expect(page.getByText("Available Hours:")).toBeVisible();
-    await expect(page.getByText("Monday:")).toBeVisible();
-    await expect(page.getByText("09:00 - 17:00")).toBeVisible();
+    await expect(page.getByText("Monday: 09:00 - 17:00")).toBeVisible();
+    await expect(page.getByText("Tuesday: 09:00 - 17:00")).toBeVisible();
   });
 
   test("should show booking form with date and time params", async ({
@@ -97,7 +82,7 @@ test.describe("Public Booking Flow", () => {
   });
 
   test("should create a booking", async ({ page }) => {
-    // Use a date 2 days in the future to satisfy minimum notice and maximum notice constraints
+    // 2 days ahead satisfies the default minimum (24h) and maximum (14d) notice
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 2);
     const dateStr = futureDate.toISOString().split("T")[0];
@@ -115,21 +100,22 @@ test.describe("Public Booking Flow", () => {
 
     await page.click('button[type="submit"]');
 
-    await page.waitForURL("/booking/success");
-
+    await expect(page).toHaveURL("/booking/success");
     await expect(page.getByText("Booking Confirmed!")).toBeVisible();
     await expect(
       page.getByText("Your meeting has been successfully scheduled"),
     ).toBeVisible();
   });
 
-  test("should return 404 for non-existent username", async ({ page }) => {
-    const response = await page.goto("/nonexistentuser/meeting");
-    expect(response?.status()).toBe(404);
+  test("should show not found for non-existent username", async ({ page }) => {
+    await page.goto(`/nonexistent${uniqueId()}/meeting`);
+    await expectNotFound(page);
   });
 
-  test("should return 404 for non-existent event type", async ({ page }) => {
-    const response = await page.goto(`/${testUsername}/nonexistent-event`);
-    expect(response?.status()).toBe(404);
+  test("should show not found for non-existent event type", async ({
+    page,
+  }) => {
+    await page.goto(`/${testUsername}/nonexistent-event`);
+    await expectNotFound(page);
   });
 });

@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
@@ -85,7 +86,10 @@ export default async function SettingsPage() {
       },
     });
 
-    redirect("/dashboard/settings");
+    // Refresh the whole dashboard (the nav shows the name too) and return
+    // success so the form can show a confirmation toast.
+    revalidatePath("/dashboard", "layout");
+    return { success: true };
   }
 
   return (
