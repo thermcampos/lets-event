@@ -4,7 +4,8 @@ version: "3"
 #
 # `task quality` runs every check that works without a database:
 # dependency check -> typecheck -> lint -> unit tests -> production build.
-# E2E is opt-in (`task test:e2e`) because it needs Postgres and browsers.
+# E2E is opt-in (`task test:e2e`): it runs in the Playwright Docker image
+# against the compose Postgres, so only Docker is needed on the host.
 # Tasks shell out to npm scripts so CI, hooks, and the gate stay in sync.
 
 tasks:
@@ -52,10 +53,25 @@ tasks:
       - npm run test:unit
 
   test:e2e:
-    desc: Run E2E tests (Playwright, starts Postgres first)
-    deps: [db:up]
+    desc: "Run E2E tests in the Playwright Docker image (extra args after --, e.g. task test:e2e -- --project=chromium)"
     cmds:
-      - npm test
+      - task: test:e2e:run
+        vars: { ARGS: "{{.CLI_ARGS}}" }
+
+  test:e2e:report:
+    desc: Open the last Playwright HTML report
+    cmds:
+      - npx playwright show-report
+
+  # Runs as root inside the container, so generated files are handed back to
+  # the host user at the end (the exit status of the tests is preserved).
+  test:e2e:run:
+    internal: true
+    cmds:
+      - >-
+        docker compose --profile e2e run --rm letsevent-e2e
+        sh -c 'npm ci --no-audit --no-fund && npx prisma migrate deploy && npx playwright test {{.ARGS}};
+        status=$?; chown -R '"$(id -u):$(id -g)"' test-results playwright-report next-env.d.ts 2>/dev/null; exit $status'
 
   db:up:
     desc: Start Postgres and wait until it is healthy
@@ -64,12 +80,6 @@ tasks:
   db:down:
     desc: Stops Postgres and tear it down
     cmd: docker compose down -v --remove-orphans
-
-  e2e:setup:
-    desc: "One-time E2E setup: start Postgres, install Playwright browsers"
-    cmds:
-      - docker compose up -d
-      - npx playwright install --with-deps
 
   build:
     desc: Production build (next build)

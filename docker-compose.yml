@@ -17,6 +17,37 @@ services:
       timeout: 5s
       retries: 5
 
+  # Playwright E2E runner (opt-in profile, used by `task test:e2e`). The image
+  # ships every browser and its system deps, so nothing is installed on the host.
+  # Its version must match @playwright/test in package.json.
+  # node_modules and .next live in anonymous volumes so the host's install and
+  # dev build are untouched.
+  letsevent-e2e:
+    image: mcr.microsoft.com/playwright:v1.65.1-noble
+    profiles: ["e2e"]
+    ipc: host
+    init: true
+    working_dir: /work
+    volumes:
+      - .:/work
+      - /work/node_modules
+      - /work/.next
+      - npm_cache:/root/.npm
+    environment:
+      CI: ${CI:-}
+      DATABASE_URL: postgresql://postgres:postgres@letsevent-db:5432/eventme?schema=public
+      AUTH_URL: http://localhost:3000
+      AUTH_SECRET: e2e-only-secret-not-for-production
+      AUTH_TRUST_HOST: "true"
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: e2e-only-secret-not-for-production
+      RESEND_APIKEY: any-api-key-for-e2e
+    depends_on:
+      letsevent-db:
+        condition: service_healthy
+
 volumes:
+  npm_cache:
+    driver: local
   postgres_data:
     driver: local

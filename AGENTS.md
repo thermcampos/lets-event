@@ -47,7 +47,7 @@ npm run lint             # Check with Biome
 npm run format           # Format with Biome
 
 # Testing
-npm test                 # E2E tests (Playwright)
+task test:e2e            # E2E tests in the Playwright Docker image (args after --)
 npm run test:ui          # Playwright UI mode
 npm run test:headed      # Playwright headed mode
 npm run test:debug       # Playwright debug mode
@@ -162,7 +162,9 @@ GET `/api/slots?eventTypeId=X&date=YYYY-MM-DD` returns available slots for a dat
 **E2E Tests (Playwright):**
 - Tests in `tests/e2e/` directory
 - Use `generateTestUser()` for unique test data to avoid conflicts
-- Tests run against real database (PostgreSQL in CI)
+- Run via `task test:e2e`: a `letsevent-e2e` compose service (profile `e2e`) runs the official Playwright image against `letsevent-db`, so nothing is installed on the host
+- The image tag in `docker-compose.yml` must match `@playwright/test` in `package.json` (pinned exactly); bump both together
+- Tests run against a real database (the compose Postgres; migrations are applied before the run)
 - Tests cover end-to-end flows: auth, availability, event types, booking, constraints
 
 **Unit Tests (Vitest):**
