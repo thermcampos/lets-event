@@ -372,7 +372,7 @@ npm run db:studio    # Open Prisma Studio
 
 ### E2E Tests (Playwright)
 
-**Location**: `tests/auth.spec.ts`
+**Location**: `tests/e2e/`
 
 **Coverage**:
 - User registration flow
@@ -388,7 +388,7 @@ npm run db:studio    # Open Prisma Studio
 
 ### Unit Tests (Vitest)
 
-**Location**: `__tests__/`
+**Location**: `tests/unit/`
 
 **Coverage**:
 - Password hashing utilities
@@ -435,15 +435,6 @@ npm run test:unit          # Vitest tests
 - Push to `main`
 - Pull requests to `main`
 - Manual dispatch
-
-### Pre-commit Hooks
-
-**File**: `.husky/pre-commit`
-
-Currently minimal (checks run in CI):
-```bash
-echo "✓ Pre-commit checks passed (lint and build run in CI)"
-```
 
 ---
 

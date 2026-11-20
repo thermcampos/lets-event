@@ -7,12 +7,12 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
-    include: ["__tests__/**/*.test.{ts,tsx}"],
+    include: ["tests/unit/**/*.test.{ts,tsx}"],
     setupFiles: ["./vitest.setup.ts"],
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./"),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });

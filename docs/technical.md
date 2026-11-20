@@ -16,24 +16,28 @@ Let's Event is a scheduling application built using modern web technologies with
 
 ```
 event.me/
-├── app/                    # Next.js App Router pages and API routes
-│   ├── api/               # API endpoints
-│   │   └── bookings/      # Booking creation endpoint
-│   ├── dashboard/         # Protected dashboard pages
-│   │   ├── availability/  # Availability management
-│   │   └── event-types/   # Event type CRUD operations
-│   ├── login/             # Authentication pages
-│   ├── register/
-│   └── [username]/[slug]/ # Public booking pages
-├── components/            # Reusable React components
-│   ├── ui/               # shadcn/ui components
-│   └── booking-form.tsx  # Booking form component
-├── lib/                   # Utility functions and configurations
-│   ├── prisma.server.ts  # Prisma client configuration
-│   └── utils.ts          # Helper functions
+├── src/                    # All application code (@/* alias -> src/*)
+│   ├── auth.ts, auth.config.ts, proxy.ts
+│   ├── app/                    # Next.js App Router pages and API routes
+│   │   ├── api/               # API endpoints
+│   │   │   └── bookings/      # Booking creation endpoint
+│   │   ├── dashboard/         # Protected dashboard pages
+│   │   │   ├── availability/  # Availability management
+│   │   │   └── event-types/   # Event type CRUD operations
+│   │   ├── login/             # Authentication pages
+│   │   ├── register/
+│   │   └── [username]/[slug]/ # Public booking pages
+│   ├── components/            # Reusable React components
+│   │   ├── ui/               # shadcn/ui components
+│   │   └── booking-form.tsx  # Booking form component
+│   └── lib/                   # Utility functions and configurations
+│       ├── prisma.server.ts  # Prisma client configuration
+│       └── utils.ts          # Helper functions
 ├── prisma/               # Database schema and migrations
 │   └── schema.prisma     # Database models
-├── tests/                # End-to-end tests
+├── tests/
+│   ├── e2e/              # End-to-end tests (Playwright)
+│   └── unit/             # Unit tests (Vitest)
 └── docs/                 # Documentation
 ```
 
@@ -68,7 +72,7 @@ event.me/
 ## Key Features Implementation
 
 ### 1. Authentication System
-**Location**: `app/login`, `app/register`, `auth.ts`
+**Location**: `src/app/login`, `src/app/register`, `src/auth.ts`
 
 - Credentials-based authentication using bcryptjs
 - Session management with NextAuth.js
@@ -76,7 +80,7 @@ event.me/
 - User registration with email/username uniqueness validation
 
 ### 2. Event Types Management
-**Location**: `app/dashboard/event-types/`
+**Location**: `src/app/dashboard/event-types/`
 
 - CRUD operations for event types
 - Each event type has:
@@ -92,7 +96,7 @@ event.me/
 - Constraints are validated server-side during booking creation
 
 ### 3. Availability Management
-**Location**: `app/dashboard/availability/`
+**Location**: `src/app/dashboard/availability/`
 
 - Users define their available time slots
 - Day-based scheduling (Monday-Sunday)
@@ -101,7 +105,7 @@ event.me/
 - Add/Delete operations
 
 ### 4. Public Booking System
-**Location**: `app/[username]/[slug]/page.tsx`, `components/booking-form.tsx`
+**Location**: `src/app/[username]/[slug]/page.tsx`, `src/components/booking-form.tsx`
 
 - Public-facing booking pages
 - URL structure: `/{username}/{event-slug}`
@@ -113,7 +117,7 @@ event.me/
 - Conflict detection (prevents double-booking)
 
 ### 5. Booking API
-**Location**: `app/api/bookings/route.ts`
+**Location**: `src/app/api/bookings/route.ts`
 
 - POST endpoint for creating bookings
 - Validates:
@@ -188,7 +192,7 @@ npm run dev
 npx playwright test
 
 # Run specific test file
-npx playwright test tests/booking.spec.ts
+npx playwright test tests/e2e/booking-management.spec.ts
 
 # Open test UI
 npx playwright test --ui
@@ -236,7 +240,7 @@ The application uses shadcn/ui components for a consistent UI:
 
 ## Utility Functions
 
-### Booking Validation (`lib/booking-validation.ts`)
+### Booking Validation (`src/lib/booking-validation.ts`)
 
 Server-side validation helper for booking constraints:
 
