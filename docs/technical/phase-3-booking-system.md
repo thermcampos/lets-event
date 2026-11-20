@@ -12,7 +12,7 @@ Complete booking system allowing guests to book meetings through public pages an
 - Guest information form
 - Booking confirmation
 
-### 2. Slot Availability Logic (`lib/slots.ts`)
+### 2. Slot Availability Logic (`src/lib/slots.ts`)
 **Functions:**
 - `getAvailableSlots()` - Calculate available time slots for a given date
   - Checks user availability for day of week
@@ -79,7 +79,7 @@ All constraints from Phase 2 Event Types are enforced:
 
 ## Components
 
-### BookingForm (`components/booking-form.tsx`)
+### BookingForm (`src/components/booking-form.tsx`)
 Client component for the booking flow:
 - Calendar for date selection
 - Fetches available slots via API
@@ -88,7 +88,7 @@ Client component for the booking flow:
 - Handles booking submission
 - Toast notifications
 
-### BookingsTable (`components/bookings-table.tsx`)
+### BookingsTable (`src/components/bookings-table.tsx`)
 Client component for managing bookings:
 - Lists all bookings
 - Displays booking details
@@ -100,7 +100,7 @@ Client component for managing bookings:
 Added "Bookings" link to dashboard navigation for easy access.
 
 ## Testing
-Created E2E tests (`tests/booking-management.spec.ts`):
+Created E2E tests (`tests/e2e/booking-management.spec.ts`):
 - Display bookings page
 - Empty state when no bookings
 - Display existing bookings

@@ -17,18 +17,18 @@ User interface and backend functionality allowing users to configure when they'r
 ## 📁 Files Created/Modified
 
 ### New Files
-1. **`app/availability/page.tsx`** - Availability management page
+1. **`src/app/dashboard/availability/page.tsx`** - Availability management page
    - Full CRUD interface for availability slots
    - Server-side rendering
    - Server actions for data mutations
 
-2. **`tests/availability.spec.ts`** - E2E test suite
+2. **`tests/e2e/availability.spec.ts`** - E2E test suite
    - 10 comprehensive test scenarios
    - Cross-browser testing (Chromium, Firefox, WebKit)
    - Covers all CRUD operations and edge cases
 
 ### Modified Files
-1. **`app/dashboard/page.tsx`**
+1. **`src/app/dashboard/page.tsx`**
    - Added link to availability page
    - Updated quick start guide
 
@@ -132,7 +132,7 @@ Two-column grid:
 
 ### Test Execution
 ```bash
-npm test -- tests/availability.spec.ts
+npm test -- tests/e2e/availability.spec.ts
 ```
 
 **Results**: 30/30 passed (10 tests × 3 browsers)

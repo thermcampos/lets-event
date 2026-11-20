@@ -60,37 +60,40 @@ docker-compose up -d     # Start PostgreSQL locally
 ## Code Organization
 
 ```
-app/
-  ├── api/               # API routes (NextAuth, slots, bookings)
-  ├── dashboard/         # Protected dashboard pages
-  │   ├── availability/  # Weekly availability management
-  │   ├── event-types/   # CRUD for event types
-  │   ├── bookings/      # Manage existing bookings
-  │   ├── settings/      # User settings, Google Calendar connect
-  │   └── integrations/    # Integration management
-  ├── book/[username]/   # Public booking pages
-  ├── booking/           # Booking flow (cancel, reschedule, success)
-  ├── login/             # Auth pages
-  └── register/
+src/                     # All application code (@/* alias -> src/*)
+  auth.ts, auth.config.ts, proxy.ts
+  app/
+    ├── api/               # API routes (NextAuth, slots, bookings)
+    ├── dashboard/         # Protected dashboard pages
+    │   ├── availability/  # Weekly availability management
+    │   ├── event-types/   # CRUD for event types
+    │   ├── bookings/      # Manage existing bookings
+    │   ├── settings/      # User settings, Google Calendar connect
+    │   └── integrations/    # Integration management
+    ├── book/[username]/   # Public booking pages
+    ├── booking/           # Booking flow (cancel, reschedule, success)
+    ├── login/             # Auth pages
+    └── register/
 
-components/
-  ├── ui/                # shadcn/ui components (Button, Card, etc.)
-  └── *.tsx              # App components (booking-form, etc.)
+  components/
+    ├── ui/                # shadcn/ui components (Button, Card, etc.)
+    └── *.tsx              # App components (booking-form, etc.)
 
-lib/
-  ├── prisma.ts          # Server-side Prisma client import (re-exports from prisma.server)
-  ├── prisma.server.ts   # Prisma client with pg adapter (DO NOT import in middleware/client)
-  ├── slots.ts           # Slot calculation logic
-  ├── google-calendar.ts # Google Calendar API integration
-  ├── resend.ts          # Email sending
-  └── utils.ts           # cn() helper for Tailwind
+  lib/
+    ├── prisma.ts          # Server-side Prisma client import (re-exports from prisma.server)
+    ├── prisma.server.ts   # Prisma client with pg adapter (DO NOT import in middleware/client)
+    ├── slots.ts           # Slot calculation logic
+    ├── google-calendar.ts # Google Calendar API integration
+    ├── resend.ts          # Email sending
+    └── utils.ts           # cn() helper for Tailwind
 
 prisma/
   ├── schema.prisma      # Database schema
   └── migrations/        # Database migrations
 
-tests/                   # Playwright E2E tests
-__tests__/               # Vitest unit tests
+tests/
+  ├── e2e/               # Playwright E2E tests
+  └── unit/              # Vitest unit tests
 ```
 
 ## Critical Patterns & Gotchas
@@ -157,13 +160,13 @@ GET `/api/slots?eventTypeId=X&date=YYYY-MM-DD` returns available slots for a dat
 ### Testing Patterns
 
 **E2E Tests (Playwright):**
-- Tests in `tests/` directory
+- Tests in `tests/e2e/` directory
 - Use `generateTestUser()` for unique test data to avoid conflicts
 - Tests run against real database (PostgreSQL in CI)
 - Tests cover end-to-end flows: auth, availability, event types, booking, constraints
 
 **Unit Tests (Vitest):**
-- Tests in `__tests__/` directory
+- Tests in `tests/unit/` directory
 - Uses `happy-dom` environment
 - Setup in `vitest.setup.ts` imports jest-dom matchers
 
@@ -216,7 +219,6 @@ RESEND_API_KEY=""
 - **Indent**: 2 spaces
 - **Quotes**: Double quotes
 - **Semicolons**: Required
-- **Pre-commit**: Husky runs Biome on staged files
 
 ## Database Schema Highlights
 
@@ -242,12 +244,12 @@ GitHub Actions (`.github/workflows/ci.yml`):
 ## Common Tasks
 
 **Add a new API route:**
-1. Create file in `app/api/[name]/route.ts`
+1. Create file in `src/app/api/[name]/route.ts`
 2. Export `GET|POST|PATCH|DELETE` handler functions
 3. Use `prisma` from `@/lib/prisma.server` for database access
 
 **Add a new dashboard page:**
-1. Create directory in `app/dashboard/[page]/`
+1. Create directory in `src/app/dashboard/[page]/`
 2. Add `page.tsx` (server component by default)
 3. Add auth check at top: `await auth()` from `@/auth`
 

@@ -226,7 +226,8 @@ Includes PostgreSQL + Next.js app.
 
 ```
 event.me/
-├── app/                    # Next.js App Router
+├── src/
+│   ├── app/               # Next.js App Router
 │   ├── (auth)/            # Auth pages (login, register)
 │   ├── dashboard/         # Protected dashboard
 │   └── api/               # API routes (NextAuth)

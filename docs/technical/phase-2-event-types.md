@@ -100,10 +100,10 @@ Phase 2 implements the core functionality for creating event types and enabling 
 ## Technical Implementation
 
 ### Components Created
-1. `/app/dashboard/event-types/page.tsx` - Event types list
-2. `/app/dashboard/event-types/new/page.tsx` - Create event type form
-3. `/app/[username]/[slug]/page.tsx` - Public booking page
-4. `/app/booking/success/page.tsx` - Booking confirmation
+1. `src/app/dashboard/event-types/page.tsx` - Event types list
+2. `src/app/dashboard/event-types/new/page.tsx` - Create event type form
+3. `src/app/[username]/[slug]/page.tsx` - Public booking page
+4. `src/app/booking/success/page.tsx` - Booking confirmation
 
 ### UI Components Added
 - `Badge` component from shadcn/ui for status indicators
@@ -133,8 +133,8 @@ Phase 2 implements the core functionality for creating event types and enabling 
 ## Testing
 
 ### E2E Tests Created
-- `tests/event-types.spec.ts` - Event types management flow
-- `tests/public-booking.spec.ts` - Public booking flow
+- `tests/e2e/event-types.spec.ts` - Event types management flow
+- `tests/e2e/public-booking.spec.ts` - Public booking flow
 
 ### Test Coverage
 - ✅ Event type creation

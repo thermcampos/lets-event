@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import bcrypt from "bcryptjs";
-import { prisma } from "../lib/prisma.server";
+import { prisma } from "@/lib/prisma.server";
 
 test.describe("Booking Management", () => {
   let userId: string;
