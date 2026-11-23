@@ -303,4 +303,22 @@ describe("POST /api/bookings/[id]/respond", () => {
       });
     });
   });
+
+  describe("host record is limited to the fields the route needs", () => {
+    const hostSelect = { select: { email: true, timezone: true } };
+
+    it("ownership lookup loads only host email and timezone", async () => {
+      await respond({ action: "decline" });
+      expect(prisma.booking.findFirst.mock.calls[0][0].include.user).toEqual(
+        hostSelect,
+      );
+    });
+
+    it("approve update loads only host email and timezone", async () => {
+      await respond({ action: "approve" });
+      expect(prisma.booking.update.mock.calls[0][0].include.user).toEqual(
+        hostSelect,
+      );
+    });
+  });
 });

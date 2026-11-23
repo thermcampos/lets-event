@@ -1,6 +1,7 @@
 import { addMinutes, isAfter } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { type NextRequest, NextResponse } from "next/server";
+import { bookingHostSelect } from "@/lib/booking-host";
 import { prisma } from "@/lib/prisma.server";
 import { sendProposalReceivedEmail } from "@/lib/resend";
 
@@ -86,9 +87,12 @@ export async function POST(request: NextRequest) {
       },
       include: {
         eventType: true,
-        user: true,
+        user: { select: bookingHostSelect },
       },
     });
+
+    // This route is public: never echo the host record back to the guest.
+    const { user: _host, ...publicBooking } = booking;
 
     try {
       await sendProposalReceivedEmail({
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
       console.error("Proposal email notification error:", emailError);
     }
 
-    return NextResponse.json(booking, { status: 201 });
+    return NextResponse.json(publicBooking, { status: 201 });
   } catch (error) {
     console.error("Proposal creation error:", error);
     return NextResponse.json(

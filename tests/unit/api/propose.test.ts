@@ -158,4 +158,30 @@ describe("POST /api/bookings/propose", () => {
     const res = await POST(req as never);
     expect(res.status).toBe(500);
   });
+
+  describe("host record is never exposed to the guest (public route)", () => {
+    beforeEach(() => {
+      db.booking.create.mockImplementation(async ({ data }) => ({
+        ...buildBooking(),
+        ...data,
+        user: { ...buildUser(), password: "$2a$10$secret-hash" },
+        eventType: buildEventType(),
+      }));
+    });
+
+    it("loads only the host fields the route needs", async () => {
+      await post(validBody);
+      expect(db.booking.create.mock.calls[0][0].include.user).toEqual({
+        select: { email: true, timezone: true },
+      });
+    });
+
+    it("201 response has no user record or password", async () => {
+      const res = await post(validBody);
+      const json = await res.json();
+      expect(res.status).toBe(201);
+      expect(json).not.toHaveProperty("user");
+      expect(JSON.stringify(json)).not.toContain("secret-hash");
+    });
+  });
 });
