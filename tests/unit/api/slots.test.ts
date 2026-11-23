@@ -117,6 +117,22 @@ describe("GET /api/slots", () => {
       expect(where.id).toBeUndefined();
     });
 
+    it("counts the host-timezone week, not the UTC week", async () => {
+      // Mon 2026-03-09 in Auckland (NZDT, +13). The host-local week is
+      // Sun 03-08 00:00 NZDT .. Sun 03-15 00:00 NZDT, i.e.
+      // 2026-03-07T11:00Z .. 2026-03-14T11:00Z (the UTC week would be
+      // 03-08T00:00Z .. 03-15T00:00Z).
+      mockEventType({ maxBookingsPerWeek: 2 }, "Pacific/Auckland");
+      db.booking.count.mockResolvedValue(2);
+      const res = await GET(getRequest(url("eventTypeId=e&date=2026-03-09")));
+      expect(await res.json()).toEqual({ slots: [] });
+      const { where } = db.booking.count.mock.calls[0][0];
+      expect(where.startTime).toEqual({
+        gte: new Date("2026-03-07T11:00:00Z"),
+        lt: new Date("2026-03-14T11:00:00Z"),
+      });
+    });
+
     it("computes slots when the week is below the cap", async () => {
       mockEventType({ maxBookingsPerWeek: 2 });
       db.booking.count.mockResolvedValue(1);

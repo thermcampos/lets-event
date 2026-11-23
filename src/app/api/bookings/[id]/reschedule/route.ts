@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { overlapsRange, validateBookingWindow } from "@/lib/booking-rules";
 import { getGoogleCalendarClient } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingRescheduledEmail } from "@/lib/resend";
+import { getWeekRange } from "@/lib/week";
 
 export async function POST(
   request: NextRequest,
@@ -39,16 +41,42 @@ export async function POST(
     }
 
     const newStartTime = new Date(startTime);
+    const newEndTime = new Date(endTime);
+
+    // Same notice / ordering rules as creating a booking
+    const windowError = validateBookingWindow(
+      newStartTime,
+      newEndTime,
+      booking.eventType,
+    );
+    if (windowError) {
+      return NextResponse.json({ error: windowError }, { status: 400 });
+    }
+
+    // The new slot must not overlap another booking (the one being moved
+    // is excluded, so shifting it by less than its own length is fine)
+    const conflictingBooking = await prisma.booking.findFirst({
+      where: {
+        eventTypeId: booking.eventTypeId,
+        id: { not: id },
+        status: { not: "cancelled" },
+        ...overlapsRange(newStartTime, newEndTime),
+      },
+    });
+
+    if (conflictingBooking) {
+      return NextResponse.json(
+        { error: "This time slot is no longer available" },
+        { status: 409 },
+      );
+    }
 
     // Check weekly limit for target week, excluding the booking being moved
     if (booking.eventType.maxBookingsPerWeek !== null) {
-      const weekStart = new Date(newStartTime);
-      weekStart.setUTCDate(
-        newStartTime.getUTCDate() - newStartTime.getUTCDay(),
+      const { start: weekStart, end: weekEnd } = getWeekRange(
+        newStartTime,
+        booking.user.timezone,
       );
-      weekStart.setUTCHours(0, 0, 0, 0);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
 
       const weekBookings = await prisma.booking.count({
         where: {
@@ -66,7 +94,6 @@ export async function POST(
         );
       }
     }
-    const newEndTime = new Date(endTime);
 
     // Update Google Calendar event
     let meetLink = booking.meetLink;

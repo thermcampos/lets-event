@@ -1,6 +1,10 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildBooking, buildEventType } from "../../helpers/builders";
+import {
+  buildBooking,
+  buildEventType,
+  buildUser,
+} from "../../helpers/builders";
 import { useTestEnv } from "../../helpers/env";
 import { jsonRequest, params } from "../../helpers/route";
 
@@ -11,7 +15,12 @@ const { prismaMock, getClient, sendEmail, patch } = vi.hoisted(() => {
     getClient: vi.fn(),
     sendEmail: vi.fn(),
     prismaMock: {
-      booking: { findUnique: vi.fn(), count: vi.fn(), update: vi.fn() },
+      booking: {
+        findUnique: vi.fn(),
+        findFirst: vi.fn(),
+        count: vi.fn(),
+        update: vi.fn(),
+      },
     },
   };
 });
@@ -26,6 +35,9 @@ import { POST } from "@/app/api/bookings/[id]/reschedule/route";
 
 // biome-ignore lint/correctness/useHookAtTopLevel: not a React hook
 useTestEnv();
+
+// 8 days before the requested slot: inside the default 24h..14d notice window.
+const NOW = new Date("2026-03-02T09:00:00Z");
 
 const body = {
   startTime: "2026-03-10T10:00:00.000Z",
@@ -42,6 +54,9 @@ describe("POST /api/bookings/[id]/reschedule", () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    prismaMock.booking.findFirst.mockResolvedValue(null);
     errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     getClient.mockResolvedValue({ events: { patch } });
     sendEmail.mockResolvedValue(undefined);
@@ -67,7 +82,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     expect(prismaMock.booking.update).not.toHaveBeenCalled();
   });
 
-  it("400 when weekly limit reached (UTC week, excludes this booking)", async () => {
+  it("400 when weekly limit reached (host-timezone week, excludes this booking)", async () => {
     prismaMock.booking.findUnique.mockResolvedValue(
       buildBooking({ eventType: buildEventType({ maxBookingsPerWeek: 2 }) }),
     );
@@ -177,13 +192,136 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     expect(errorSpy).toHaveBeenCalled();
   });
 
-  it("characterization: no conflict, notice or end>start validation", async () => {
-    prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
-    const res = await call({
-      startTime: "2020-01-01T10:00:00.000Z", // in the past
-      endTime: "2020-01-01T09:00:00.000Z", // before start
+  describe("window validation (shared with booking creation)", () => {
+    const slot = (startOffsetH: number, lengthMin = 30) => {
+      const start = new Date(NOW.getTime() + startOffsetH * 3_600_000);
+      return {
+        startTime: start.toISOString(),
+        endTime: new Date(start.getTime() + lengthMin * 60_000).toISOString(),
+      };
+    };
+
+    beforeEach(() => {
+      prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
     });
-    expect(res.status).toBe(307);
-    expect(prismaMock.booking.update).toHaveBeenCalledOnce();
+
+    it.each([
+      [
+        "end before start",
+        { startTime: body.endTime, endTime: body.startTime },
+      ],
+      [
+        "end equal to start",
+        { startTime: body.startTime, endTime: body.startTime },
+      ],
+      ["invalid start", { startTime: "not-a-date", endTime: body.endTime }],
+      ["invalid end", { startTime: body.startTime, endTime: "not-a-date" }],
+    ])("400 for %s, without touching Google or the booking", async (_name, times) => {
+      const res = await call(times);
+      expect(res.status).toBe(400);
+      expect(prismaMock.booking.findFirst).not.toHaveBeenCalled();
+      expect(getClient).not.toHaveBeenCalled();
+      expect(prismaMock.booking.update).not.toHaveBeenCalled();
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("400 in the past", async () => {
+      const res = await call({
+        startTime: "2020-01-01T10:00:00.000Z",
+        endTime: "2020-01-01T10:30:00.000Z",
+      });
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toMatch(/at least 24 hours in advance/);
+      expect(prismaMock.booking.update).not.toHaveBeenCalled();
+    });
+
+    it("minimum notice: exactly the minimum is allowed, 1 ms earlier is not", async () => {
+      const exact = slot(24);
+      expect((await call(exact)).status).toBe(307);
+
+      const early = {
+        ...exact,
+        startTime: new Date(Date.parse(exact.startTime) - 1).toISOString(),
+      };
+      const res = await call(early);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe(
+        "Booking must be at least 24 hours in advance",
+      );
+    });
+
+    it("maximum notice: exactly the maximum is allowed, 1 ms later is not", async () => {
+      const exact = slot(14 * 24);
+      expect((await call(exact)).status).toBe(307);
+
+      const late = {
+        ...exact,
+        startTime: new Date(Date.parse(exact.startTime) + 1).toISOString(),
+        endTime: new Date(Date.parse(exact.endTime) + 1).toISOString(),
+      };
+      const res = await call(late);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe(
+        "Booking cannot be more than 14 days in advance",
+      );
+    });
+  });
+
+  describe("conflicts", () => {
+    beforeEach(() => {
+      prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
+    });
+
+    it("409 when the new slot overlaps another booking, before any Google call", async () => {
+      prismaMock.booking.findFirst.mockResolvedValue(
+        buildBooking({ id: "other" }),
+      );
+      const res = await call();
+      expect(res.status).toBe(409);
+      expect(await res.json()).toEqual({
+        error: "This time slot is no longer available",
+      });
+      expect(getClient).not.toHaveBeenCalled();
+      expect(prismaMock.booking.update).not.toHaveBeenCalled();
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("looks for overlapping non-cancelled bookings of the same event type, excluding itself", async () => {
+      await call();
+      const { where } = prismaMock.booking.findFirst.mock.calls[0][0];
+      expect(where.eventTypeId).toBe("evt-type-1");
+      expect(where.id).toEqual({ not: "booking-1" });
+      expect(where.status).toEqual({ not: "cancelled" });
+      // overlap: existing.start < new.end && existing.end > new.start
+      expect(where.startTime).toEqual({ lt: new Date(body.endTime) });
+      expect(where.endTime).toEqual({ gt: new Date(body.startTime) });
+    });
+  });
+
+  describe("weekly limit uses the host's timezone", () => {
+    it("counts the host-local week, not the UTC week", async () => {
+      // 2026-03-08T20:00Z is Sunday in UTC but Monday 09:00 in Auckland (NZDT,
+      // UTC+13). The host-local week is Sun 03-08 00:00 NZDT .. Sun 03-15 00:00
+      // NZDT, i.e. 2026-03-07T11:00Z .. 2026-03-14T11:00Z.
+      prismaMock.booking.findUnique.mockResolvedValue(
+        buildBooking({
+          user: buildUser({ timezone: "Pacific/Auckland" }),
+          eventType: buildEventType({ maxBookingsPerWeek: 2 }),
+        }),
+      );
+      prismaMock.booking.count.mockResolvedValue(2);
+
+      const res = await call({
+        startTime: "2026-03-08T20:00:00.000Z",
+        endTime: "2026-03-08T20:30:00.000Z",
+      });
+
+      expect(res.status).toBe(400);
+      const { where } = prismaMock.booking.count.mock.calls[0][0];
+      expect(where.startTime.gte.toISOString()).toBe(
+        "2026-03-07T11:00:00.000Z",
+      );
+      expect(where.startTime.lt.toISOString()).toBe("2026-03-14T11:00:00.000Z");
+    });
   });
 });
