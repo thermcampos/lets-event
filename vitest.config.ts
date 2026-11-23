@@ -20,7 +20,33 @@ export default defineConfig({
         "src/auth.ts",
         "src/proxy.ts",
       ],
-      exclude: ["src/lib/prisma*.ts", "**/*.d.ts", "src/components/ui/**"],
+      exclude: [
+        "src/lib/prisma*.ts",
+        "**/*.d.ts",
+        "src/components/ui/**",
+        // 3-line re-export of the NextAuth `handlers`; nothing to unit test.
+        "src/app/api/auth/**",
+      ],
+      // Set a few points under the measured baseline (99.8% lines / 96.7%
+      // branches at the time of writing). Ratchet up, never lower without a note.
+      thresholds: {
+        lines: 97,
+        statements: 97,
+        functions: 97,
+        branches: 93,
+        "src/lib/google-calendar.ts": {
+          lines: 97,
+          branches: 95,
+          functions: 100,
+        },
+        "src/lib/slots.ts": { lines: 97, branches: 95 },
+        "src/lib/booking-validation.ts": { lines: 97, branches: 95 },
+        "src/lib/utils.ts": { lines: 97, branches: 95 },
+        "src/app/api/bookings/**": { lines: 97, branches: 90 },
+        "src/auth.config.ts": { lines: 100 },
+        "src/auth.ts": { lines: 97 },
+        "src/proxy.ts": { lines: 97 },
+      },
     },
   },
   resolve: {
