@@ -45,6 +45,11 @@ function body(overrides: Record<string, unknown> = {}) {
   };
 }
 
+// The route reads the host's timezone to bucket bookings into weeks.
+function withHost(eventType: Record<string, unknown>, timezone = "UTC") {
+  return { ...eventType, user: { timezone } };
+}
+
 function post(b: unknown = body()) {
   return POST(jsonRequest("http://localhost/api/bookings", b));
 }
@@ -58,7 +63,7 @@ describe("POST /api/bookings", () => {
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
     errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    prisma.eventType.findUnique.mockResolvedValue(buildEventType());
+    prisma.eventType.findUnique.mockResolvedValue(withHost(buildEventType()));
     prisma.booking.findFirst.mockResolvedValue(null);
     prisma.booking.count.mockResolvedValue(0);
     prisma.booking.create.mockResolvedValue(buildBooking());
@@ -148,12 +153,12 @@ describe("POST /api/bookings", () => {
       expect(prisma.booking.count).not.toHaveBeenCalled();
     });
 
-    it("400 when maxBookingsPerWeek is reached, using a Sunday-based local week", async () => {
+    it("400 when maxBookingsPerWeek is reached, using a Sunday-based week", async () => {
       prisma.eventType.findUnique.mockResolvedValue(
-        buildEventType({ maxBookingsPerWeek: 2 }),
+        withHost(buildEventType({ maxBookingsPerWeek: 2 })),
       );
       prisma.booking.count.mockResolvedValue(2);
-      // 2026-03-04 is a Wednesday -> week is Sun 03-01 .. Sun 03-08 (TZ=UTC)
+      // 2026-03-04 is a Wednesday -> week is Sun 03-01 .. Sun 03-08 (UTC host)
       const res = await post(
         body({
           startTime: "2026-03-04T10:00:00Z",
@@ -173,11 +178,60 @@ describe("POST /api/bookings", () => {
 
     it("allows booking when below maxBookingsPerWeek", async () => {
       prisma.eventType.findUnique.mockResolvedValue(
-        buildEventType({ maxBookingsPerWeek: 2 }),
+        withHost(buildEventType({ maxBookingsPerWeek: 2 })),
       );
       prisma.booking.count.mockResolvedValue(1);
       const res = await post();
       expect(res.status).toBe(201);
+    });
+
+    it("buckets the week in the host's timezone, not the server's", async () => {
+      // 2026-03-08T20:00Z is Sunday in UTC but Monday 09:00 in Auckland (NZDT,
+      // +13): the host-local week is 2026-03-07T11:00Z .. 2026-03-14T11:00Z.
+      prisma.eventType.findUnique.mockResolvedValue(
+        withHost(buildEventType({ maxBookingsPerWeek: 2 }), "Pacific/Auckland"),
+      );
+      prisma.booking.count.mockResolvedValue(2);
+      const res = await post(
+        body({
+          startTime: "2026-03-08T20:00:00Z",
+          endTime: "2026-03-08T20:30:00Z",
+        }),
+      );
+      expect(res.status).toBe(400);
+      const where = prisma.booking.count.mock.calls[0][0].where;
+      expect(where.startTime.gte).toEqual(new Date("2026-03-07T11:00:00Z"));
+      expect(where.startTime.lt).toEqual(new Date("2026-03-14T11:00:00Z"));
+    });
+
+    it("conflict query matches overlapping ranges", async () => {
+      const start = new Date(NOW.getTime() + 48 * HOUR);
+      const end = new Date(start.getTime() + 30 * 60_000);
+      await post(
+        body({ startTime: start.toISOString(), endTime: end.toISOString() }),
+      );
+      const where = prisma.booking.findFirst.mock.calls[0][0].where;
+      // existing.start < new.end && existing.end > new.start
+      expect(where.startTime).toEqual({ lt: end });
+      expect(where.endTime).toEqual({ gt: start });
+    });
+  });
+
+  describe("ordering and date validation", () => {
+    it.each([
+      [
+        "end before start",
+        (s: string) => ({ startTime: s, endTime: "2026-03-01T00:00:00Z" }),
+      ],
+      ["end equal to start", (s: string) => ({ startTime: s, endTime: s })],
+      ["invalid start", (_s: string) => ({ startTime: "nope" })],
+      ["invalid end", (s: string) => ({ startTime: s, endTime: "nope" })],
+    ])("400 for %s, before any conflict or weekly query", async (_name, make) => {
+      const start = new Date(NOW.getTime() + 48 * HOUR).toISOString();
+      const res = await post(body(make(start)));
+      expect(res.status).toBe(400);
+      expect(prisma.booking.findFirst).not.toHaveBeenCalled();
+      expect(prisma.booking.create).not.toHaveBeenCalled();
     });
   });
 

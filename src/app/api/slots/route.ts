@@ -2,6 +2,7 @@ import { fromZonedTime } from "date-fns-tz";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma.server";
 import { getAvailableSlots } from "@/lib/slots";
+import { getWeekRange } from "@/lib/week";
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,13 +55,10 @@ export async function GET(request: NextRequest) {
 
     // Check weekly limit before computing slots
     if (eventType.maxBookingsPerWeek !== null) {
-      const [year, month, day] = dateStr.split("-").map(Number);
-      const dateObj = new Date(Date.UTC(year, month - 1, day));
-      const weekStart = new Date(dateObj);
-      weekStart.setUTCDate(dateObj.getUTCDate() - dateObj.getUTCDay());
-      weekStart.setUTCHours(0, 0, 0, 0);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
+      const { start: weekStart, end: weekEnd } = getWeekRange(
+        startOfDate,
+        timezone,
+      );
 
       const weekBookings = await prisma.booking.count({
         where: {

@@ -1,13 +1,14 @@
-import { addDays, addHours, isAfter, isBefore } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { bookingHostSelect } from "@/lib/booking-host";
+import { overlapsRange, validateBookingWindow } from "@/lib/booking-rules";
 import {
   createGoogleCalendarEvent,
   isGoogleCalendarConnected,
 } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingCreatedEmail } from "@/lib/resend";
+import { getWeekRange } from "@/lib/week";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
     // Get event type
     const eventType = await prisma.eventType.findUnique({
       where: { id: eventTypeId },
+      include: { user: { select: { timezone: true } } },
     });
 
     if (!eventType) {
@@ -43,28 +45,11 @@ export async function POST(request: NextRequest) {
 
     const start = new Date(startTime);
     const end = new Date(endTime);
-    const now = new Date();
 
-    // Validate minimum notice
-    const minNoticeTime = addHours(now, eventType.minimumNoticeHours);
-    if (isBefore(start, minNoticeTime)) {
-      return NextResponse.json(
-        {
-          error: `Booking must be at least ${eventType.minimumNoticeHours} hours in advance`,
-        },
-        { status: 400 },
-      );
-    }
-
-    // Validate maximum notice
-    const maxNoticeTime = addDays(now, eventType.maximumNoticeDays);
-    if (isAfter(start, maxNoticeTime)) {
-      return NextResponse.json(
-        {
-          error: `Booking cannot be more than ${eventType.maximumNoticeDays} days in advance`,
-        },
-        { status: 400 },
-      );
+    // Validate ordering and notice window (shared with reschedule)
+    const windowError = validateBookingWindow(start, end, eventType);
+    if (windowError) {
+      return NextResponse.json({ error: windowError }, { status: 400 });
     }
 
     // Check for conflicts
@@ -74,17 +59,7 @@ export async function POST(request: NextRequest) {
         status: {
           not: "cancelled",
         },
-        OR: [
-          {
-            AND: [{ startTime: { lte: start } }, { endTime: { gt: start } }],
-          },
-          {
-            AND: [{ startTime: { lt: end } }, { endTime: { gte: end } }],
-          },
-          {
-            AND: [{ startTime: { gte: start } }, { endTime: { lte: end } }],
-          },
-        ],
+        ...overlapsRange(start, end),
       },
     });
 
@@ -97,12 +72,10 @@ export async function POST(request: NextRequest) {
 
     // Check max bookings per week if set
     if (eventType.maxBookingsPerWeek) {
-      const weekStart = new Date(start);
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekEnd.getDate() + 7);
+      const { start: weekStart, end: weekEnd } = getWeekRange(
+        start,
+        eventType.user.timezone,
+      );
 
       const weekBookings = await prisma.booking.count({
         where: {
