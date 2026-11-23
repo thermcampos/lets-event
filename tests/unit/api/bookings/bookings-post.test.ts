@@ -12,6 +12,7 @@ import { useTestEnv } from "../../helpers/env";
 import type { PrismaMock } from "../../helpers/prisma-mock";
 import { jsonRequest } from "../../helpers/route";
 
+vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma.server", async () => {
   const { createPrismaMock } = await import("../../helpers/prisma-mock");
   return { prisma: createPrismaMock() };
@@ -340,5 +341,57 @@ describe("POST /api/bookings", () => {
     );
     expect(res.status).toBe(500);
     expect(errorSpy).toHaveBeenCalled();
+  });
+  describe("host record is never exposed to the guest (public route)", () => {
+    const leakyBooking = () =>
+      buildBooking({
+        user: {
+          id: "user-1",
+          email: "host@example.com",
+          timezone: "UTC",
+          password: "$2a$10$secret-hash",
+        },
+      });
+
+    beforeEach(() => {
+      prisma.booking.create.mockResolvedValue(leakyBooking());
+    });
+
+    it("loads only the host fields the route needs", async () => {
+      await post();
+      expect(prisma.booking.create.mock.calls[0][0].include.user).toEqual({
+        select: { email: true, timezone: true },
+      });
+    });
+
+    it("201 response without Google has no user record or password", async () => {
+      const res = await post();
+      const json = await res.json();
+      expect(res.status).toBe(201);
+      expect(json).not.toHaveProperty("user");
+      expect(JSON.stringify(json)).not.toContain("secret-hash");
+    });
+
+    it("201 response with Google has no user record or password, keeps meetLink", async () => {
+      isConnected.mockResolvedValue(true);
+      createEvent.mockResolvedValue({
+        eventId: "g-evt-1",
+        meetLink: "https://meet.google.com/abc",
+      } as never);
+      const res = await post();
+      const json = await res.json();
+      expect(res.status).toBe(201);
+      expect(json.meetLink).toBe("https://meet.google.com/abc");
+      expect(json).not.toHaveProperty("user");
+      expect(JSON.stringify(json)).not.toContain("secret-hash");
+    });
+
+    it("still emails the host using the loaded host fields", async () => {
+      await post();
+      expect(sendEmail.mock.calls[0][0]).toMatchObject({
+        to: "host@example.com",
+        timezone: "UTC",
+      });
+    });
   });
 });

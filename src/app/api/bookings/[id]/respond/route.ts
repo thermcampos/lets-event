@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { bookingHostSelect } from "@/lib/booking-host";
 import {
   createGoogleCalendarEvent,
   isGoogleCalendarConnected,
@@ -42,7 +43,7 @@ export async function POST(
 
     const booking = await prisma.booking.findFirst({
       where: { id, userId: user.id },
-      include: { eventType: true, user: true },
+      include: { eventType: true, user: { select: bookingHostSelect } },
     });
 
     if (!booking) {
@@ -119,7 +120,7 @@ export async function POST(
       return tx.booking.update({
         where: { id },
         data: { status: "confirmed", respondedAt: new Date() },
-        include: { eventType: true, user: true },
+        include: { eventType: true, user: { select: bookingHostSelect } },
       });
     });
 

@@ -1,5 +1,7 @@
 import { addDays, addHours, isAfter, isBefore } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { bookingHostSelect } from "@/lib/booking-host";
 import {
   createGoogleCalendarEvent,
   isGoogleCalendarConnected,
@@ -138,9 +140,12 @@ export async function POST(request: NextRequest) {
       },
       include: {
         eventType: true,
-        user: true,
+        user: { select: bookingHostSelect },
       },
     });
+
+    // This route is public: never echo the host record back to the guest.
+    const { user: _host, ...publicBooking } = booking;
 
     // Try to create Google Calendar event
     try {
@@ -207,7 +212,7 @@ export async function POST(request: NextRequest) {
 
         // Return booking with calendar info
         return NextResponse.json(
-          { ...booking, meetLink: calendarEvent.meetLink },
+          { ...publicBooking, meetLink: calendarEvent.meetLink },
           { status: 201 },
         );
       }
@@ -232,7 +237,7 @@ export async function POST(request: NextRequest) {
       console.error("Email notification error:", emailError);
     }
 
-    return NextResponse.json(booking, { status: 201 });
+    return NextResponse.json(publicBooking, { status: 201 });
   } catch (error) {
     console.error("Booking creation error:", error);
     return NextResponse.json(
@@ -244,10 +249,16 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const bookings = await prisma.booking.findMany({
+      where: { userId: session.user.id },
       include: {
         eventType: true,
-        user: true,
       },
       orderBy: {
         startTime: "desc",
