@@ -10,7 +10,10 @@ export async function getGoogleCalendarClient(userId: string) {
     },
   });
 
-  if (!account || !account.access_token) {
+  // Without a refresh token the connection dies at the first token expiry, so
+  // treat it as not connected and let the host reconnect (same rule as
+  // isGoogleCalendarConnected).
+  if (!account?.access_token || !account.refresh_token) {
     throw new Error("Google Calendar not connected");
   }
 
@@ -137,8 +140,11 @@ export async function updateGoogleCalendarEvent(
 
   const requestBody: Record<string, unknown> = {};
 
-  if (updates.summary) requestBody.summary = updates.summary;
-  if (updates.description) requestBody.description = updates.description;
+  // `!== undefined` so an empty string can clear summary/description.
+  if (updates.summary !== undefined) requestBody.summary = updates.summary;
+  if (updates.description !== undefined) {
+    requestBody.description = updates.description;
+  }
   if (updates.startTime) {
     requestBody.start = { dateTime: updates.startTime.toISOString() };
   }
@@ -200,5 +206,6 @@ export async function isGoogleCalendarConnected(userId: string) {
     },
   });
 
-  return !!account?.access_token;
+  // Connected means usable long-term: needs a refresh token as well.
+  return !!(account?.access_token && account.refresh_token);
 }

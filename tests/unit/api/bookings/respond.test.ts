@@ -5,6 +5,7 @@ import { POST } from "@/app/api/bookings/[id]/respond/route";
 import { auth } from "@/auth";
 import {
   createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
   isGoogleCalendarConnected,
 } from "@/lib/google-calendar";
 import { prisma as prismaImport } from "@/lib/prisma.server";
@@ -24,6 +25,7 @@ vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/google-calendar", () => ({
   isGoogleCalendarConnected: vi.fn(),
   createGoogleCalendarEvent: vi.fn(),
+  deleteGoogleCalendarEvent: vi.fn(),
 }));
 vi.mock("@/lib/resend", () => ({
   sendProposalApprovedEmail: vi.fn(),
@@ -34,6 +36,7 @@ const prisma = prismaImport as unknown as PrismaMock;
 const authMock = auth as unknown as ReturnType<typeof vi.fn>;
 const isConnected = vi.mocked(isGoogleCalendarConnected);
 const createEvent = vi.mocked(createGoogleCalendarEvent);
+const deleteEvent = vi.mocked(deleteGoogleCalendarEvent);
 const approvedEmail = vi.mocked(sendProposalApprovedEmail);
 const declinedEmail = vi.mocked(sendProposalDeclinedEmail);
 
@@ -286,7 +289,7 @@ describe("POST /api/bookings/[id]/respond", () => {
         expect(approvedEmail.mock.calls[0][0].meetLink).toBeNull();
       });
 
-      it("characterization: booking.update after event creation fails -> meetLink emailed and returned but not persisted", async () => {
+      it("booking.update after event creation fails -> event deleted, no meetLink emailed or returned", async () => {
         createEvent.mockResolvedValue({
           eventId: "g-1",
           meetLink: "https://meet.google.com/x",
@@ -296,10 +299,26 @@ describe("POST /api/bookings/[id]/respond", () => {
           .mockRejectedValueOnce(new Error("db down"));
         const res = await respond({ action: "approve" });
         expect(res.status).toBe(200);
-        expect((await res.json()).meetLink).toBe("https://meet.google.com/x");
-        expect(approvedEmail.mock.calls[0][0].meetLink).toBe(
-          "https://meet.google.com/x",
-        );
+        expect(deleteEvent).toHaveBeenCalledWith("user-1", "g-1");
+        expect((await res.json()).meetLink).toBeNull();
+        expect(approvedEmail.mock.calls[0][0].meetLink).toBeNull();
+      });
+
+      it("orphan cleanup failure is logged and approval still succeeds", async () => {
+        createEvent.mockResolvedValue({ eventId: "g-1" } as never);
+        prisma.booking.update
+          .mockImplementationOnce(async ({ data }) => buildBooking({ ...data }))
+          .mockRejectedValueOnce(new Error("db down"));
+        deleteEvent.mockRejectedValue(new Error("google down"));
+        const res = await respond({ action: "approve" });
+        expect(res.status).toBe(200);
+        expect(deleteEvent).toHaveBeenCalledOnce();
+      });
+
+      it("no cleanup when the event was linked to the booking", async () => {
+        createEvent.mockResolvedValue({ eventId: "g-1" } as never);
+        await respond({ action: "approve" });
+        expect(deleteEvent).not.toHaveBeenCalled();
       });
     });
   });

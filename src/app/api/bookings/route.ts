@@ -8,6 +8,7 @@ import {
 } from "@/lib/booking-rules";
 import {
   createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
   isGoogleCalendarConnected,
 } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
@@ -121,6 +122,7 @@ export async function POST(request: NextRequest) {
     const { user: _host, ...publicBooking } = booking;
 
     // Try to create Google Calendar event
+    let orphanedEventId: string | null | undefined;
     try {
       const isConnected = await isGoogleCalendarConnected(eventType.userId);
       if (isConnected) {
@@ -157,6 +159,8 @@ export async function POST(request: NextRequest) {
           },
         );
 
+        orphanedEventId = calendarEvent.eventId;
+
         // Update booking with Google Calendar info
         await prisma.booking.update({
           where: { id: booking.id },
@@ -165,6 +169,7 @@ export async function POST(request: NextRequest) {
             meetLink: calendarEvent.meetLink || null,
           },
         });
+        orphanedEventId = undefined; // booking now references the event
 
         // Send email notification
         try {
@@ -191,7 +196,15 @@ export async function POST(request: NextRequest) {
       }
     } catch (calendarError) {
       console.error("Google Calendar error:", calendarError);
-      // Continue without calendar event - booking was still created
+      // Continue without calendar event - booking was still created.
+      // If the event was created but never linked to the booking, remove it.
+      if (orphanedEventId) {
+        try {
+          await deleteGoogleCalendarEvent(eventType.userId, orphanedEventId);
+        } catch (cleanupError) {
+          console.error("Failed to clean up orphaned event:", cleanupError);
+        }
+      }
     }
 
     // Send email notification (no calendar integration)
