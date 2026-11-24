@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, PATCH } from "@/app/api/bookings/[id]/route";
 import { auth } from "@/auth";
-import { getGoogleCalendarClient } from "@/lib/google-calendar";
+import { deleteGoogleCalendarEvent } from "@/lib/google-calendar";
 import { prisma as prismaImport } from "@/lib/prisma.server";
 import {
   sendBookingCompletedGuestEmail,
@@ -19,7 +19,7 @@ vi.mock("@/lib/prisma.server", async () => {
 });
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/google-calendar", () => ({
-  getGoogleCalendarClient: vi.fn(),
+  deleteGoogleCalendarEvent: vi.fn(),
 }));
 vi.mock("@/lib/resend", () => ({
   sendBookingStatusChangedEmail: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock("@/lib/resend", () => ({
 
 const prisma = prismaImport as unknown as PrismaMock;
 const authMock = auth as unknown as ReturnType<typeof vi.fn>;
-const getClient = vi.mocked(getGoogleCalendarClient);
+const deleteEvent = vi.mocked(deleteGoogleCalendarEvent);
 const statusEmail = vi.mocked(sendBookingStatusChangedEmail);
 const completedEmail = vi.mocked(sendBookingCompletedGuestEmail);
 
@@ -92,7 +92,6 @@ describe("GET /api/bookings/[id]", () => {
 
 describe("PATCH /api/bookings/[id]", () => {
   let errorSpy: ReturnType<typeof vi.spyOn>;
-  const events = { delete: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -103,8 +102,7 @@ describe("PATCH /api/bookings/[id]", () => {
     prisma.booking.update.mockImplementation(async ({ data }) =>
       buildBooking({ ...data }),
     );
-    getClient.mockResolvedValue({ events } as never);
-    events.delete.mockResolvedValue({});
+    deleteEvent.mockResolvedValue(undefined);
     statusEmail.mockResolvedValue(undefined as never);
     completedEmail.mockResolvedValue(undefined as never);
   });
@@ -212,39 +210,23 @@ describe("PATCH /api/bookings/[id]", () => {
       );
       const res = await patch({ status: "cancelled" });
       expect(res.status).toBe(200);
-      expect(getClient).toHaveBeenCalledWith("user-1");
-      expect(events.delete).toHaveBeenCalledWith({
-        calendarId: "primary",
-        eventId: "g-1",
-        sendUpdates: "all",
-      });
+      expect(deleteEvent).toHaveBeenCalledWith("user-1", "g-1");
     });
 
     it("still cancels and logs when the Google delete fails", async () => {
       prisma.booking.findFirst.mockResolvedValue(
         buildBooking({ googleCalendarEventId: "g-1" }),
       );
-      events.delete.mockRejectedValue(new Error("google down"));
+      deleteEvent.mockRejectedValue(new Error("google down"));
       const res = await patch({ status: "cancelled" });
       expect(res.status).toBe(200);
       expect(prisma.booking.update).toHaveBeenCalled();
       expect(errorSpy).toHaveBeenCalled();
     });
 
-    it("still cancels and logs when the client cannot be built (not connected)", async () => {
-      prisma.booking.findFirst.mockResolvedValue(
-        buildBooking({ googleCalendarEventId: "g-1" }),
-      );
-      getClient.mockRejectedValue(new Error("not connected"));
-      const res = await patch({ status: "cancelled" });
-      expect(res.status).toBe(200);
-      expect(events.delete).not.toHaveBeenCalled();
-      expect(errorSpy).toHaveBeenCalled();
-    });
-
     it("skips Google when there is no event id", async () => {
       await patch({ status: "cancelled" });
-      expect(getClient).not.toHaveBeenCalled();
+      expect(deleteEvent).not.toHaveBeenCalled();
     });
 
     it("skips Google for non-cancel statuses even with an event id", async () => {
@@ -252,7 +234,7 @@ describe("PATCH /api/bookings/[id]", () => {
         buildBooking({ googleCalendarEventId: "g-1" }),
       );
       await patch({ status: "confirmed" });
-      expect(getClient).not.toHaveBeenCalled();
+      expect(deleteEvent).not.toHaveBeenCalled();
     });
   });
 

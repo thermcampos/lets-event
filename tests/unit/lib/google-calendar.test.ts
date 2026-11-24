@@ -26,12 +26,15 @@ import {
   createGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
   getGoogleCalendarClient,
+  isEventGoneError,
   isGoogleCalendarConnected,
   updateGoogleCalendarEvent,
 } from "@/lib/google-calendar";
 
 // biome-ignore lint/correctness/useHookAtTopLevel: not a React hook; registers vitest hooks
 useTestEnv();
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const baseEvent = {
   summary: "Intro call",
@@ -84,16 +87,28 @@ describe("google-calendar", () => {
       expect(g.setCredentials).toHaveBeenCalledWith({
         access_token: "access-1",
         refresh_token: "refresh-1",
+        expiry_date: 1_800_000_000_000,
       });
       expect(g.calendarFactory).toHaveBeenCalledWith(
         expect.objectContaining({ version: "v3" }),
       );
     });
 
-    it("characterization: expiry_date is never passed to setCredentials", async () => {
+    it("passes expiry_date (ms) from the stored expires_at", async () => {
       await getGoogleCalendarClient("user-1");
-      const creds = g.setCredentials.mock.calls[0][0];
-      expect(creds).not.toHaveProperty("expiry_date");
+      expect(g.setCredentials.mock.calls[0][0].expiry_date).toBe(
+        1_800_000_000_000,
+      );
+    });
+
+    it("omits expiry_date when expires_at is not stored", async () => {
+      prismaMock.account.findFirst.mockResolvedValue(
+        buildAccount({ expires_at: null }),
+      );
+      await getGoogleCalendarClient("user-1");
+      expect(g.setCredentials.mock.calls[0][0]).not.toHaveProperty(
+        "expiry_date",
+      );
     });
   });
 
@@ -129,22 +144,20 @@ describe("google-calendar", () => {
       expect(arg.data).not.toHaveProperty("refresh_token");
     });
 
-    it("stores expires_at null when expiry_date is missing (access-only)", async () => {
+    it("keeps the stored expires_at when expiry_date is missing (access-only)", async () => {
       await getGoogleCalendarClient("user-1");
       await g.emitTokens({ access_token: "a2" });
       expect(prismaMock.account.update.mock.calls[0][0].data).toEqual({
         access_token: "a2",
-        expires_at: null,
       });
     });
 
-    it("stores expires_at null when expiry_date is missing (with refresh token)", async () => {
+    it("keeps the stored expires_at when expiry_date is missing (with refresh token)", async () => {
       await getGoogleCalendarClient("user-1");
       await g.emitTokens({ access_token: "a2", refresh_token: "r2" });
       expect(prismaMock.account.update.mock.calls[0][0].data).toEqual({
         access_token: "a2",
         refresh_token: "r2",
-        expires_at: null,
       });
     });
 
@@ -171,12 +184,15 @@ describe("google-calendar", () => {
       expect(prismaMock.account.update).not.toHaveBeenCalled();
     });
 
-    it("characterization: a failing update rejects the listener (no try/catch)", async () => {
+    it("a failing update is logged, not thrown (no unhandled rejection)", async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       prismaMock.account.update.mockRejectedValue(new Error("db down"));
       await getGoogleCalendarClient("user-1");
-      await expect(g.emitTokens({ access_token: "a3" })).rejects.toThrow(
-        "db down",
-      );
+      await expect(
+        g.emitTokens({ access_token: "a3" }),
+      ).resolves.toBeUndefined();
+      expect(errorSpy).toHaveBeenCalledOnce();
+      errorSpy.mockRestore();
     });
   });
 
@@ -215,7 +231,7 @@ describe("google-calendar", () => {
           attendees: [{ email: "guest@example.com" }],
           conferenceData: {
             createRequest: {
-              requestId: `user-1-${Date.now()}`,
+              requestId: expect.stringMatching(UUID),
               conferenceSolutionKey: { type: "hangoutsMeet" },
             },
           },
@@ -235,12 +251,15 @@ describe("google-calendar", () => {
       });
     });
 
-    it("pins requestId to userId and Date.now()", async () => {
+    it("uses a unique UUID requestId per call, even within the same millisecond", async () => {
       await createGoogleCalendarEvent("user-1", baseEvent);
-      const body = g.events.insert.mock.calls[0][0].requestBody;
-      expect(body.conferenceData.createRequest.requestId).toBe(
-        `user-1-${new Date("2026-03-01T00:00:00Z").getTime()}`,
+      await createGoogleCalendarEvent("user-1", baseEvent);
+      const [a, b] = g.events.insert.mock.calls.map(
+        (c: any) => c[0].requestBody.conferenceData.createRequest.requestId,
       );
+      expect(a).toMatch(UUID);
+      expect(b).toMatch(UUID);
+      expect(a).not.toBe(b);
     });
 
     it("omits cancel/reschedule lines without bookingId", async () => {
@@ -377,6 +396,38 @@ describe("google-calendar", () => {
         sendUpdates: "all",
       });
     });
+
+    it.each([
+      ["code 404", { code: 404 }],
+      ["code 410", { code: 410 }],
+      ["string code '410'", { code: "410" }],
+      ["status 404", { status: 404 }],
+      ["response.status 410", { response: { status: 410 } }],
+    ])("treats an already-deleted event as success (%s)", async (_n, err) => {
+      g.events.delete.mockRejectedValue(err);
+      await expect(
+        deleteGoogleCalendarEvent("user-1", "ge-1"),
+      ).resolves.toBeUndefined();
+    });
+
+    it.each([
+      { code: 403 },
+      { code: 500 },
+      new Error("boom"),
+    ])("still rethrows other failures (%o)", async (err) => {
+      g.events.delete.mockRejectedValue(err);
+      await expect(deleteGoogleCalendarEvent("user-1", "ge-1")).rejects.toBe(
+        err,
+      );
+    });
+  });
+
+  describe("isEventGoneError", () => {
+    it("is false for non-errors", () => {
+      expect(isEventGoneError(undefined)).toBe(false);
+      expect(isEventGoneError(null)).toBe(false);
+      expect(isEventGoneError({})).toBe(false);
+    });
   });
 
   describe("isGoogleCalendarConnected", () => {
@@ -447,7 +498,10 @@ describe("google-calendar", () => {
       ).rejects.toBe(error);
     });
 
-    it.each(errors)("delete rejecting with %s", async (_n, error) => {
+    // 404/410 on delete are treated as success (see deleteGoogleCalendarEvent).
+    it.each(
+      errors.filter(([n]) => n !== "404" && n !== "410"),
+    )("delete rejecting with %s", async (_n, error) => {
       g.events.delete.mockRejectedValue(error);
       await expect(deleteGoogleCalendarEvent("user-1", "ge-1")).rejects.toBe(
         error,

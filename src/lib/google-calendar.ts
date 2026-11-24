@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { google } from "googleapis";
 import { prisma } from "./prisma.server";
 
@@ -21,31 +22,30 @@ export async function getGoogleCalendarClient(userId: string) {
   oauth2Client.setCredentials({
     access_token: account.access_token,
     refresh_token: account.refresh_token,
+    // Lets googleapis refresh proactively instead of waiting for a 401.
+    ...(account.expires_at ? { expiry_date: account.expires_at * 1000 } : {}),
   });
 
-  // Handle token refresh
+  // Persist refreshed tokens. Runs as an un-awaited event listener, so it must
+  // never throw: a failed write only means the next call refreshes again.
   oauth2Client.on("tokens", async (tokens) => {
-    if (tokens.refresh_token) {
+    if (!tokens.access_token && !tokens.refresh_token) return;
+    try {
       await prisma.account.update({
         where: { id: account.id },
         data: {
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          expires_at: tokens.expiry_date
-            ? Math.floor(tokens.expiry_date / 1000)
-            : null,
+          ...(tokens.access_token ? { access_token: tokens.access_token } : {}),
+          ...(tokens.refresh_token
+            ? { refresh_token: tokens.refresh_token }
+            : {}),
+          // Keep the stored expiry when Google doesn't send a new one.
+          ...(tokens.expiry_date
+            ? { expires_at: Math.floor(tokens.expiry_date / 1000) }
+            : {}),
         },
       });
-    } else if (tokens.access_token) {
-      await prisma.account.update({
-        where: { id: account.id },
-        data: {
-          access_token: tokens.access_token,
-          expires_at: tokens.expiry_date
-            ? Math.floor(tokens.expiry_date / 1000)
-            : null,
-        },
-      });
+    } catch (error) {
+      console.error("Failed to persist refreshed Google tokens:", error);
     }
   });
 
@@ -99,7 +99,7 @@ export async function createGoogleCalendarEvent(
       attendees: event.attendees.map((email) => ({ email })),
       conferenceData: {
         createRequest: {
-          requestId: `${userId}-${Date.now()}`,
+          requestId: randomUUID(),
           conferenceSolutionKey: {
             type: "hangoutsMeet",
           },
@@ -163,17 +163,33 @@ export async function updateGoogleCalendarEvent(
   };
 }
 
+/** True when Google reports the event as already deleted (404 Not Found / 410 Gone). */
+export function isEventGoneError(error: unknown): boolean {
+  const e = error as {
+    code?: number | string;
+    status?: number;
+    response?: { status?: number };
+  };
+  const status = Number(e?.code ?? e?.status ?? e?.response?.status);
+  return status === 404 || status === 410;
+}
+
+/** Deletes a calendar event. An event that is already gone counts as success. */
 export async function deleteGoogleCalendarEvent(
   userId: string,
   eventId: string,
 ) {
   const calendar = await getGoogleCalendarClient(userId);
 
-  await calendar.events.delete({
-    calendarId: "primary",
-    eventId,
-    sendUpdates: "all",
-  });
+  try {
+    await calendar.events.delete({
+      calendarId: "primary",
+      eventId,
+      sendUpdates: "all",
+    });
+  } catch (error) {
+    if (!isEventGoneError(error)) throw error;
+  }
 }
 
 export async function isGoogleCalendarConnected(userId: string) {
