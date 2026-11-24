@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { bookingHostSelect } from "@/lib/booking-host";
+import { getBookingLinks } from "@/lib/booking-links";
 import {
   ACTIVE_BOOKING_STATUS,
   overlapsRange,
@@ -126,9 +127,7 @@ export async function POST(request: NextRequest) {
     try {
       const isConnected = await isGoogleCalendarConnected(eventType.userId);
       if (isConnected) {
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const cancelUrl = `${baseUrl}/booking/cancel/${booking.id}`;
-        const rescheduleUrl = `${baseUrl}/booking/reschedule/${booking.id}`;
+        const { cancelUrl, rescheduleUrl } = getBookingLinks(booking.id);
 
         const descriptionParts = [
           `Meeting with ${guestName}`,

@@ -8,26 +8,22 @@ import {
 import { useTestEnv } from "../../helpers/env";
 import { jsonRequest, params } from "../../helpers/route";
 
-const { prismaMock, getClient, sendEmail, patch } = vi.hoisted(() => {
-  const patch = vi.fn();
-  return {
-    patch,
-    getClient: vi.fn(),
-    sendEmail: vi.fn(),
-    prismaMock: {
-      booking: {
-        findUnique: vi.fn(),
-        findFirst: vi.fn(),
-        count: vi.fn(),
-        update: vi.fn(),
-      },
+const { prismaMock, updateEvent, sendEmail } = vi.hoisted(() => ({
+  updateEvent: vi.fn(),
+  sendEmail: vi.fn(),
+  prismaMock: {
+    booking: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+      count: vi.fn(),
+      update: vi.fn(),
     },
-  };
-});
+  },
+}));
 
 vi.mock("@/lib/prisma.server", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/google-calendar", () => ({
-  getGoogleCalendarClient: getClient,
+  updateGoogleCalendarEvent: updateEvent,
 }));
 vi.mock("@/lib/resend", () => ({ sendBookingRescheduledEmail: sendEmail }));
 
@@ -58,7 +54,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     vi.setSystemTime(NOW);
     prismaMock.booking.findFirst.mockResolvedValue(null);
     errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    getClient.mockResolvedValue({ events: { patch } });
+    updateEvent.mockResolvedValue({});
     sendEmail.mockResolvedValue(undefined);
   });
   afterEach(() => errorSpy.mockRestore());
@@ -110,7 +106,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
   it("without a Google event: updates booking, emails, redirects", async () => {
     prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
     const res = await call();
-    expect(getClient).not.toHaveBeenCalled();
+    expect(updateEvent).not.toHaveBeenCalled();
     expect(prismaMock.booking.update).toHaveBeenCalledOnce();
     expect(sendEmail).toHaveBeenCalledOnce();
     expect(res.status).toBe(307);
@@ -123,13 +119,17 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     prismaMock.booking.findUnique.mockResolvedValue(
       buildBooking({ googleCalendarEventId: "ge-1", meetLink: "old" }),
     );
-    patch.mockResolvedValue({ data: { hangoutLink: "https://meet/new" } });
+    updateEvent.mockResolvedValue({ meetLink: "https://meet/new" });
     await call();
-    expect(patch).toHaveBeenCalledWith(
+    expect(updateEvent).toHaveBeenCalledWith(
+      "user-1",
+      "ge-1",
       expect.objectContaining({
-        calendarId: "primary",
-        eventId: "ge-1",
-        sendUpdates: "all",
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        description: expect.stringContaining(
+          "Cancel this booking: https://app.test/booking/cancel/booking-1\nReschedule this booking: https://app.test/booking/reschedule/booking-1",
+        ),
       }),
     );
     expect(prismaMock.booking.update.mock.calls[0][0].data.meetLink).toBe(
@@ -141,7 +141,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     prismaMock.booking.findUnique.mockResolvedValue(
       buildBooking({ googleCalendarEventId: "ge-1", meetLink: "old" }),
     );
-    patch.mockResolvedValue({ data: {} });
+    updateEvent.mockResolvedValue({ meetLink: null });
     await call();
     expect(prismaMock.booking.update.mock.calls[0][0].data.meetLink).toBe(
       "old",
@@ -152,7 +152,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     prismaMock.booking.findUnique.mockResolvedValue(
       buildBooking({ googleCalendarEventId: "ge-1", meetLink: "old" }),
     );
-    patch.mockRejectedValue(new Error("google down"));
+    updateEvent.mockRejectedValue(new Error("google down"));
     const res = await call();
     expect(errorSpy).toHaveBeenCalled();
     expect(prismaMock.booking.update).toHaveBeenCalledOnce();
@@ -170,7 +170,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     prismaMock.booking.findUnique.mockResolvedValue(
       buildBooking({ googleCalendarEventId: "ge-1" }),
     );
-    getClient.mockRejectedValue(new Error("Google Calendar not connected"));
+    updateEvent.mockRejectedValue(new Error("Google Calendar not connected"));
     const res = await call();
     expect(prismaMock.booking.update).toHaveBeenCalledOnce();
     expect(res.status).toBe(307);
@@ -221,7 +221,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       const res = await call(times);
       expect(res.status).toBe(400);
       expect(prismaMock.booking.findFirst).not.toHaveBeenCalled();
-      expect(getClient).not.toHaveBeenCalled();
+      expect(updateEvent).not.toHaveBeenCalled();
       expect(prismaMock.booking.update).not.toHaveBeenCalled();
       expect(sendEmail).not.toHaveBeenCalled();
     });
@@ -282,7 +282,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       expect(await res.json()).toEqual({
         error: "This time slot is no longer available",
       });
-      expect(getClient).not.toHaveBeenCalled();
+      expect(updateEvent).not.toHaveBeenCalled();
       expect(prismaMock.booking.update).not.toHaveBeenCalled();
       expect(sendEmail).not.toHaveBeenCalled();
     });

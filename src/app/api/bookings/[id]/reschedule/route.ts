@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getBookingLinks } from "@/lib/booking-links";
 import {
   ACTIVE_BOOKING_STATUS,
   overlapsRange,
   validateBookingWindow,
 } from "@/lib/booking-rules";
-import { getGoogleCalendarClient } from "@/lib/google-calendar";
+import { updateGoogleCalendarEvent } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingRescheduledEmail } from "@/lib/resend";
 import { getWeekRange } from "@/lib/week";
@@ -103,11 +104,7 @@ export async function POST(
     let meetLink = booking.meetLink;
     if (booking.googleCalendarEventId) {
       try {
-        const calendar = await getGoogleCalendarClient(booking.userId);
-
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const cancelUrl = `${baseUrl}/booking/cancel/${booking.id}`;
-        const rescheduleUrl = `${baseUrl}/booking/reschedule/${booking.id}`;
+        const { cancelUrl, rescheduleUrl } = getBookingLinks(booking.id);
 
         const description = [
           booking.eventType.description || "",
@@ -121,22 +118,13 @@ export async function POST(
           .filter(Boolean)
           .join("\n");
 
-        const response = await calendar.events.patch({
-          calendarId: "primary",
-          eventId: booking.googleCalendarEventId,
-          sendUpdates: "all",
-          requestBody: {
-            start: {
-              dateTime: newStartTime.toISOString(),
-            },
-            end: {
-              dateTime: newEndTime.toISOString(),
-            },
-            description,
-          },
-        });
+        const updated = await updateGoogleCalendarEvent(
+          booking.userId,
+          booking.googleCalendarEventId,
+          { startTime: newStartTime, endTime: newEndTime, description },
+        );
 
-        meetLink = response.data.hangoutLink || booking.meetLink;
+        meetLink = updated.meetLink || booking.meetLink;
       } catch (error) {
         // Best-effort, like cancel: the guest's reschedule still goes through.
         console.error("Failed to update Google Calendar event:", error);
