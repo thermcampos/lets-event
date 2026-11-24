@@ -77,15 +77,18 @@ describe("POST /api/bookings", () => {
   });
 
   describe("validation", () => {
-    it.each(["eventTypeId", "guestName", "guestEmail", "startTime", "endTime"])(
-      "400 when %s is missing",
-      async (field) => {
-        const res = await post(body({ [field]: undefined }));
-        expect(res.status).toBe(400);
-        expect(await res.json()).toEqual({ error: "Missing required fields" });
-        expect(prisma.booking.create).not.toHaveBeenCalled();
-      },
-    );
+    it.each([
+      "eventTypeId",
+      "guestName",
+      "guestEmail",
+      "startTime",
+      "endTime",
+    ])("400 when %s is missing", async (field) => {
+      const res = await post(body({ [field]: undefined }));
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "Missing required fields" });
+      expect(prisma.booking.create).not.toHaveBeenCalled();
+    });
 
     it("400 when a field is empty", async () => {
       const res = await post(body({ guestName: "" }));
@@ -223,16 +226,13 @@ describe("POST /api/bookings", () => {
       ["end equal to start", (s: string) => ({ startTime: s, endTime: s })],
       ["invalid start", (_s: string) => ({ startTime: "nope" })],
       ["invalid end", (s: string) => ({ startTime: s, endTime: "nope" })],
-    ])(
-      "400 for %s, before any conflict or weekly query",
-      async (_name, make) => {
-        const start = new Date(NOW.getTime() + 48 * HOUR).toISOString();
-        const res = await post(body(make(start)));
-        expect(res.status).toBe(400);
-        expect(prisma.booking.findFirst).not.toHaveBeenCalled();
-        expect(prisma.booking.create).not.toHaveBeenCalled();
-      },
-    );
+    ])("400 for %s, before any conflict or weekly query", async (_name, make) => {
+      const start = new Date(NOW.getTime() + 48 * HOUR).toISOString();
+      const res = await post(body(make(start)));
+      expect(res.status).toBe(400);
+      expect(prisma.booking.findFirst).not.toHaveBeenCalled();
+      expect(prisma.booking.create).not.toHaveBeenCalled();
+    });
   });
 
   describe("without Google Calendar", () => {

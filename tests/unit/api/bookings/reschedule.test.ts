@@ -216,17 +216,14 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       ],
       ["invalid start", { startTime: "not-a-date", endTime: body.endTime }],
       ["invalid end", { startTime: body.startTime, endTime: "not-a-date" }],
-    ])(
-      "400 for %s, without touching Google or the booking",
-      async (_name, times) => {
-        const res = await call(times);
-        expect(res.status).toBe(400);
-        expect(prismaMock.booking.findFirst).not.toHaveBeenCalled();
-        expect(getClient).not.toHaveBeenCalled();
-        expect(prismaMock.booking.update).not.toHaveBeenCalled();
-        expect(sendEmail).not.toHaveBeenCalled();
-      },
-    );
+    ])("400 for %s, without touching Google or the booking", async (_name, times) => {
+      const res = await call(times);
+      expect(res.status).toBe(400);
+      expect(prismaMock.booking.findFirst).not.toHaveBeenCalled();
+      expect(getClient).not.toHaveBeenCalled();
+      expect(prismaMock.booking.update).not.toHaveBeenCalled();
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
 
     it("400 in the past", async () => {
       const res = await call({
