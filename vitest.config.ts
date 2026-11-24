@@ -40,7 +40,6 @@ export default defineConfig({
           functions: 100,
         },
         "src/lib/slots.ts": { lines: 97, branches: 95 },
-        "src/lib/booking-validation.ts": { lines: 97, branches: 95 },
         "src/lib/utils.ts": { lines: 97, branches: 95 },
         "src/app/api/bookings/**": { lines: 97, branches: 90 },
         "src/auth.config.ts": { lines: 100 },

@@ -240,21 +240,13 @@ The application uses shadcn/ui components for a consistent UI:
 
 ## Utility Functions
 
-### Booking Validation (`src/lib/booking-validation.ts`)
+### Booking Rules (`src/lib/booking-rules.ts`)
 
-Server-side validation helper for booking constraints:
+Shared by booking creation and reschedule:
 
-```typescript
-validateBooking(eventTypeId: string, startTime: Date): Promise<BookingValidationError[]>
-```
-
-**Validations performed**:
-1. Event type exists and is active
-2. Start time respects minimum notice hours
-3. Start time is within maximum notice days
-4. Max bookings per week limit not exceeded (if set)
-
-Returns array of validation errors, empty if valid.
+- `validateBookingWindow(start, end, rules)`: returns an error message (or `null`) for invalid dates, minimum notice and maximum notice.
+- `overlapsRange(start, end)`: Prisma `where` fragment for overlapping bookings.
+- `ACTIVE_BOOKING_STATUS`: status filter (excludes `cancelled` and `declined`) used by every conflict check and weekly-cap count, including `/api/slots`.
 
 ## Security Considerations
 
