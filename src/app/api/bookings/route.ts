@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { bookingHostSelect } from "@/lib/booking-host";
-import { overlapsRange, validateBookingWindow } from "@/lib/booking-rules";
+import {
+  ACTIVE_BOOKING_STATUS,
+  overlapsRange,
+  validateBookingWindow,
+} from "@/lib/booking-rules";
 import {
   createGoogleCalendarEvent,
   isGoogleCalendarConnected,
@@ -56,9 +60,7 @@ export async function POST(request: NextRequest) {
     const conflictingBooking = await prisma.booking.findFirst({
       where: {
         eventTypeId,
-        status: {
-          not: "cancelled",
-        },
+        status: ACTIVE_BOOKING_STATUS,
         ...overlapsRange(start, end),
       },
     });
@@ -85,9 +87,7 @@ export async function POST(request: NextRequest) {
             gte: weekStart,
             lt: weekEnd,
           },
-          status: {
-            not: "cancelled",
-          },
+          status: ACTIVE_BOOKING_STATUS,
         },
       });
 

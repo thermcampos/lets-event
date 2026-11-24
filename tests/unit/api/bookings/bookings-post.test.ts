@@ -143,7 +143,7 @@ describe("POST /api/bookings", () => {
       });
       const where = prisma.booking.findFirst.mock.calls[0][0].where;
       expect(where.eventTypeId).toBe("evt-type-1");
-      expect(where.status).toEqual({ not: "cancelled" });
+      expect(where.status).toEqual({ notIn: ["cancelled", "declined"] });
       expect(where.userId).toBeUndefined();
       expect(prisma.booking.create).not.toHaveBeenCalled();
     });
@@ -173,7 +173,7 @@ describe("POST /api/bookings", () => {
       expect(where.startTime.gte).toEqual(new Date("2026-03-01T00:00:00Z"));
       expect(where.startTime.lt).toEqual(new Date("2026-03-08T00:00:00Z"));
       expect(where.eventTypeId).toBe("evt-type-1");
-      expect(where.status).toEqual({ not: "cancelled" });
+      expect(where.status).toEqual({ notIn: ["cancelled", "declined"] });
     });
 
     it("allows booking when below maxBookingsPerWeek", async () => {
