@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { google } from "googleapis";
+import { getBookingLinks } from "./booking-links";
 import { prisma } from "./prisma.server";
 
 export async function getGoogleCalendarClient(userId: string) {
@@ -68,13 +69,9 @@ export async function createGoogleCalendarEvent(
 ) {
   const calendar = await getGoogleCalendarClient(userId);
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const cancelUrl = event.bookingId
-    ? `${baseUrl}/booking/cancel/${event.bookingId}`
-    : "";
-  const rescheduleUrl = event.bookingId
-    ? `${baseUrl}/booking/reschedule/${event.bookingId}`
-    : "";
+  const { cancelUrl, rescheduleUrl } = event.bookingId
+    ? getBookingLinks(event.bookingId)
+    : { cancelUrl: "", rescheduleUrl: "" };
 
   const description = [
     event.description || "",
