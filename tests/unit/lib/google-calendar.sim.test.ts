@@ -131,7 +131,7 @@ describe("google-calendar stateful simulation", () => {
     expect(events.size).toBe(0);
   });
 
-  it("unknown ids reject with 404, and deleted ids with 410", async () => {
+  it("update rejects unknown ids with 404 and deleted ids with 410; delete of a gone event is a no-op", async () => {
     await expect(
       updateGoogleCalendarEvent("user-1", "nope", { summary: "x" }),
     ).rejects.toMatchObject({ code: 404 });
@@ -140,7 +140,7 @@ describe("google-calendar stateful simulation", () => {
     await deleteGoogleCalendarEvent("user-1", "ge-1");
     await expect(
       deleteGoogleCalendarEvent("user-1", "ge-1"),
-    ).rejects.toMatchObject({ code: 410 });
+    ).resolves.toBeUndefined();
     await expect(
       updateGoogleCalendarEvent("user-1", "ge-1", { summary: "x" }),
     ).rejects.toMatchObject({ code: 410 });
@@ -180,6 +180,7 @@ describe("google-calendar stateful simulation", () => {
     expect(g.setCredentials).toHaveBeenLastCalledWith({
       access_token: "fresh",
       refresh_token: "fresh-refresh",
+      expiry_date: 1_900_000_000_000,
     });
   });
 
