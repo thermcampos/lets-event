@@ -106,7 +106,7 @@ export async function POST(
         const calendar = await getGoogleCalendarClient(booking.userId);
 
         const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const cancelUrl = `${baseUrl}/api/bookings/${booking.id}/cancel`;
+        const cancelUrl = `${baseUrl}/booking/cancel/${booking.id}`;
         const rescheduleUrl = `${baseUrl}/booking/reschedule/${booking.id}`;
 
         const description = [

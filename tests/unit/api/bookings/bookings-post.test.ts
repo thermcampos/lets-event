@@ -292,7 +292,7 @@ describe("POST /api/bookings", () => {
       expect(input.description).toContain("Email: guest@example.com");
       expect(input.description).toContain("Notes:\nhello");
       expect(input.description).toContain(
-        "Cancel: https://app.test/api/bookings/booking-1/cancel",
+        "Cancel: https://app.test/booking/cancel/booking-1",
       );
       expect(input.description).toContain(
         "Reschedule: https://app.test/booking/reschedule/booking-1",
@@ -329,7 +329,7 @@ describe("POST /api/bookings", () => {
       vi.stubEnv("NEXTAUTH_URL", "");
       await post();
       expect(createEvent.mock.calls[0][1].description).toContain(
-        "http://localhost:3000/api/bookings/booking-1/cancel",
+        "http://localhost:3000/booking/cancel/booking-1",
       );
     });
 
