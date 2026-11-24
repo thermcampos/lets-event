@@ -1,4 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { google } from "googleapis";
+import { getBookingLinks } from "./booking-links";
 import { prisma } from "./prisma.server";
 
 export async function getGoogleCalendarClient(userId: string) {
@@ -9,7 +11,10 @@ export async function getGoogleCalendarClient(userId: string) {
     },
   });
 
-  if (!account || !account.access_token) {
+  // Without a refresh token the connection dies at the first token expiry, so
+  // treat it as not connected and let the host reconnect (same rule as
+  // isGoogleCalendarConnected).
+  if (!account?.access_token || !account.refresh_token) {
     throw new Error("Google Calendar not connected");
   }
 
@@ -21,31 +26,30 @@ export async function getGoogleCalendarClient(userId: string) {
   oauth2Client.setCredentials({
     access_token: account.access_token,
     refresh_token: account.refresh_token,
+    // Lets googleapis refresh proactively instead of waiting for a 401.
+    ...(account.expires_at ? { expiry_date: account.expires_at * 1000 } : {}),
   });
 
-  // Handle token refresh
+  // Persist refreshed tokens. Runs as an un-awaited event listener, so it must
+  // never throw: a failed write only means the next call refreshes again.
   oauth2Client.on("tokens", async (tokens) => {
-    if (tokens.refresh_token) {
+    if (!tokens.access_token && !tokens.refresh_token) return;
+    try {
       await prisma.account.update({
         where: { id: account.id },
         data: {
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          expires_at: tokens.expiry_date
-            ? Math.floor(tokens.expiry_date / 1000)
-            : null,
+          ...(tokens.access_token ? { access_token: tokens.access_token } : {}),
+          ...(tokens.refresh_token
+            ? { refresh_token: tokens.refresh_token }
+            : {}),
+          // Keep the stored expiry when Google doesn't send a new one.
+          ...(tokens.expiry_date
+            ? { expires_at: Math.floor(tokens.expiry_date / 1000) }
+            : {}),
         },
       });
-    } else if (tokens.access_token) {
-      await prisma.account.update({
-        where: { id: account.id },
-        data: {
-          access_token: tokens.access_token,
-          expires_at: tokens.expiry_date
-            ? Math.floor(tokens.expiry_date / 1000)
-            : null,
-        },
-      });
+    } catch (error) {
+      console.error("Failed to persist refreshed Google tokens:", error);
     }
   });
 
@@ -65,13 +69,9 @@ export async function createGoogleCalendarEvent(
 ) {
   const calendar = await getGoogleCalendarClient(userId);
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const cancelUrl = event.bookingId
-    ? `${baseUrl}/api/bookings/${event.bookingId}/cancel`
-    : "";
-  const rescheduleUrl = event.bookingId
-    ? `${baseUrl}/booking/reschedule/${event.bookingId}`
-    : "";
+  const { cancelUrl, rescheduleUrl } = event.bookingId
+    ? getBookingLinks(event.bookingId)
+    : { cancelUrl: "", rescheduleUrl: "" };
 
   const description = [
     event.description || "",
@@ -99,7 +99,7 @@ export async function createGoogleCalendarEvent(
       attendees: event.attendees.map((email) => ({ email })),
       conferenceData: {
         createRequest: {
-          requestId: `${userId}-${Date.now()}`,
+          requestId: randomUUID(),
           conferenceSolutionKey: {
             type: "hangoutsMeet",
           },
@@ -137,8 +137,11 @@ export async function updateGoogleCalendarEvent(
 
   const requestBody: Record<string, unknown> = {};
 
-  if (updates.summary) requestBody.summary = updates.summary;
-  if (updates.description) requestBody.description = updates.description;
+  // `!== undefined` so an empty string can clear summary/description.
+  if (updates.summary !== undefined) requestBody.summary = updates.summary;
+  if (updates.description !== undefined) {
+    requestBody.description = updates.description;
+  }
   if (updates.startTime) {
     requestBody.start = { dateTime: updates.startTime.toISOString() };
   }
@@ -163,17 +166,33 @@ export async function updateGoogleCalendarEvent(
   };
 }
 
+/** True when Google reports the event as already deleted (404 Not Found / 410 Gone). */
+export function isEventGoneError(error: unknown): boolean {
+  const e = error as {
+    code?: number | string;
+    status?: number;
+    response?: { status?: number };
+  };
+  const status = Number(e?.code ?? e?.status ?? e?.response?.status);
+  return status === 404 || status === 410;
+}
+
+/** Deletes a calendar event. An event that is already gone counts as success. */
 export async function deleteGoogleCalendarEvent(
   userId: string,
   eventId: string,
 ) {
   const calendar = await getGoogleCalendarClient(userId);
 
-  await calendar.events.delete({
-    calendarId: "primary",
-    eventId,
-    sendUpdates: "all",
-  });
+  try {
+    await calendar.events.delete({
+      calendarId: "primary",
+      eventId,
+      sendUpdates: "all",
+    });
+  } catch (error) {
+    if (!isEventGoneError(error)) throw error;
+  }
 }
 
 export async function isGoogleCalendarConnected(userId: string) {
@@ -184,5 +203,6 @@ export async function isGoogleCalendarConnected(userId: string) {
     },
   });
 
-  return !!account?.access_token;
+  // Connected means usable long-term: needs a refresh token as well.
+  return !!(account?.access_token && account.refresh_token);
 }

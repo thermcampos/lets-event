@@ -7,6 +7,10 @@ updates:
     groups:
       js-minor-patch:
         update-types: ["minor", "patch"]
+    # Biome versions change formatting/lint results: bump deliberately together
+    # with biome.json's $schema and AGENTS.md (see #74).
+    ignore:
+      - dependency-name: "@biomejs/biome"
 
   - package-ecosystem: github-actions
     directory: /

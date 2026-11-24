@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getGoogleCalendarClient } from "@/lib/google-calendar";
+import { deleteGoogleCalendarEvent } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingCancelledEmail } from "@/lib/resend";
 
@@ -26,12 +26,10 @@ async function cancelBooking(id: string) {
   // Cancel Google Calendar event
   if (booking.googleCalendarEventId) {
     try {
-      const calendar = await getGoogleCalendarClient(booking.userId);
-      await calendar.events.delete({
-        calendarId: "primary",
-        eventId: booking.googleCalendarEventId,
-        sendUpdates: "all",
-      });
+      await deleteGoogleCalendarEvent(
+        booking.userId,
+        booking.googleCalendarEventId,
+      );
     } catch (error) {
       console.error("Failed to delete Google Calendar event:", error);
     }
@@ -79,18 +77,14 @@ export async function POST(
   }
 }
 
+// GET must never change state: mail scanners, link previewers and prefetchers
+// follow links. Links created before this change point here, so send them to
+// the confirmation page, where the guest confirms and the page POSTs.
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  try {
-    const { id } = await params;
-    return await cancelBooking(id);
-  } catch (error) {
-    console.error("Error cancelling booking:", error);
-    return NextResponse.json(
-      { error: "Failed to cancel booking" },
-      { status: 500 },
-    );
-  }
+  const { id } = await params;
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  return NextResponse.redirect(`${baseUrl}/booking/cancel/${id}`);
 }

@@ -1,7 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getGoogleCalendarClient } from "@/lib/google-calendar";
+import { getBookingLinks } from "@/lib/booking-links";
+import {
+  ACTIVE_BOOKING_STATUS,
+  overlapsRange,
+  validateBookingWindow,
+} from "@/lib/booking-rules";
+import { updateGoogleCalendarEvent } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingRescheduledEmail } from "@/lib/resend";
+import { getWeekRange } from "@/lib/week";
 
 export async function POST(
   request: NextRequest,
@@ -39,23 +46,49 @@ export async function POST(
     }
 
     const newStartTime = new Date(startTime);
+    const newEndTime = new Date(endTime);
+
+    // Same notice / ordering rules as creating a booking
+    const windowError = validateBookingWindow(
+      newStartTime,
+      newEndTime,
+      booking.eventType,
+    );
+    if (windowError) {
+      return NextResponse.json({ error: windowError }, { status: 400 });
+    }
+
+    // The new slot must not overlap another booking (the one being moved
+    // is excluded, so shifting it by less than its own length is fine)
+    const conflictingBooking = await prisma.booking.findFirst({
+      where: {
+        eventTypeId: booking.eventTypeId,
+        id: { not: id },
+        status: ACTIVE_BOOKING_STATUS,
+        ...overlapsRange(newStartTime, newEndTime),
+      },
+    });
+
+    if (conflictingBooking) {
+      return NextResponse.json(
+        { error: "This time slot is no longer available" },
+        { status: 409 },
+      );
+    }
 
     // Check weekly limit for target week, excluding the booking being moved
     if (booking.eventType.maxBookingsPerWeek !== null) {
-      const weekStart = new Date(newStartTime);
-      weekStart.setUTCDate(
-        newStartTime.getUTCDate() - newStartTime.getUTCDay(),
+      const { start: weekStart, end: weekEnd } = getWeekRange(
+        newStartTime,
+        booking.user.timezone,
       );
-      weekStart.setUTCHours(0, 0, 0, 0);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
 
       const weekBookings = await prisma.booking.count({
         where: {
           eventTypeId: booking.eventTypeId,
           id: { not: id },
           startTime: { gte: weekStart, lt: weekEnd },
-          status: { not: "cancelled" },
+          status: ACTIVE_BOOKING_STATUS,
         },
       });
 
@@ -66,17 +99,12 @@ export async function POST(
         );
       }
     }
-    const newEndTime = new Date(endTime);
 
     // Update Google Calendar event
     let meetLink = booking.meetLink;
     if (booking.googleCalendarEventId) {
       try {
-        const calendar = await getGoogleCalendarClient(booking.userId);
-
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const cancelUrl = `${baseUrl}/api/bookings/${booking.id}/cancel`;
-        const rescheduleUrl = `${baseUrl}/booking/reschedule/${booking.id}`;
+        const { cancelUrl, rescheduleUrl } = getBookingLinks(booking.id);
 
         const description = [
           booking.eventType.description || "",
@@ -90,28 +118,16 @@ export async function POST(
           .filter(Boolean)
           .join("\n");
 
-        const response = await calendar.events.patch({
-          calendarId: "primary",
-          eventId: booking.googleCalendarEventId,
-          sendUpdates: "all",
-          requestBody: {
-            start: {
-              dateTime: newStartTime.toISOString(),
-            },
-            end: {
-              dateTime: newEndTime.toISOString(),
-            },
-            description,
-          },
-        });
-
-        meetLink = response.data.hangoutLink || booking.meetLink;
-      } catch (error) {
-        console.error("Failed to update Google Calendar event:", error);
-        return NextResponse.json(
-          { error: "Failed to update calendar event" },
-          { status: 500 },
+        const updated = await updateGoogleCalendarEvent(
+          booking.userId,
+          booking.googleCalendarEventId,
+          { startTime: newStartTime, endTime: newEndTime, description },
         );
+
+        meetLink = updated.meetLink || booking.meetLink;
+      } catch (error) {
+        // Best-effort, like cancel: the guest's reschedule still goes through.
+        console.error("Failed to update Google Calendar event:", error);
       }
     }
 

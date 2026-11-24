@@ -218,7 +218,7 @@ RESEND_API_KEY=""
 
 ## Code Style
 
-- **Formatter**: Biome 2.4.4
+- **Formatter**: Biome 2.4.4 (exact devDependency; CI and local use the same binary, see #74)
 - **Indent**: 2 spaces
 - **Quotes**: Double quotes
 - **Semicolons**: Required

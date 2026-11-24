@@ -1,6 +1,7 @@
 import { addDays } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma.server";
+import { addZonedDays, getWeekRange } from "@/lib/week";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
 
     const eventType = await prisma.eventType.findUnique({
       where: { id: eventTypeId },
+      include: { user: { select: { timezone: true } } },
     });
 
     if (!eventType) {
@@ -32,18 +34,15 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const maxDate = addDays(now, eventType.maximumNoticeDays);
 
-    // Build week boundaries (Sun-Sat) covering the entire booking window
-    const windowStart = new Date(now);
-    windowStart.setDate(windowStart.getDate() - windowStart.getDay());
-    windowStart.setHours(0, 0, 0, 0);
-
+    // Build week boundaries (Sun-Sat, in the host's timezone) covering the
+    // entire booking window
+    const timezone = eventType.user.timezone;
     const weeks: { weekStart: Date; weekEnd: Date }[] = [];
-    let cursor = new Date(windowStart);
-    while (cursor < maxDate) {
-      const weekEnd = new Date(cursor);
-      weekEnd.setDate(weekEnd.getDate() + 7);
-      weeks.push({ weekStart: new Date(cursor), weekEnd });
-      cursor = weekEnd;
+    let range = getWeekRange(now, timezone);
+    const windowStart = range.start;
+    while (range.start < maxDate) {
+      weeks.push({ weekStart: range.start, weekEnd: range.end });
+      range = getWeekRange(range.end, timezone);
     }
 
     // Count confirmed bookings per week in one query
@@ -67,8 +66,7 @@ export async function GET(request: NextRequest) {
       ).length;
 
       if (count >= eventType.maxBookingsPerWeek) {
-        const weekEndInclusive = new Date(weekEnd);
-        weekEndInclusive.setDate(weekEndInclusive.getDate() - 1);
+        const weekEndInclusive = addZonedDays(weekEnd, -1, timezone);
         fullWeeks.push({
           from: weekStart.toISOString(),
           to: weekEndInclusive.toISOString(),

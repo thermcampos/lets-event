@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { bookingHostSelect } from "@/lib/booking-host";
 import {
   createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
   isGoogleCalendarConnected,
 } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
@@ -42,7 +44,7 @@ export async function POST(
 
     const booking = await prisma.booking.findFirst({
       where: { id, userId: user.id },
-      include: { eventType: true, user: true },
+      include: { eventType: true, user: { select: bookingHostSelect } },
     });
 
     if (!booking) {
@@ -119,12 +121,13 @@ export async function POST(
       return tx.booking.update({
         where: { id },
         data: { status: "confirmed", respondedAt: new Date() },
-        include: { eventType: true, user: true },
+        include: { eventType: true, user: { select: bookingHostSelect } },
       });
     });
 
     // Create Google Calendar event
     let meetLink: string | null = null;
+    let orphanedEventId: string | null | undefined;
     try {
       const isConnected = await isGoogleCalendarConnected(user.id);
       if (isConnected) {
@@ -146,6 +149,7 @@ export async function POST(
           bookingId: booking.id,
         });
 
+        orphanedEventId = calendarEvent.eventId;
         meetLink = calendarEvent.meetLink || null;
         await prisma.booking.update({
           where: { id },
@@ -154,12 +158,23 @@ export async function POST(
             meetLink,
           },
         });
+        orphanedEventId = undefined; // booking now references the event
       }
     } catch (calendarError) {
       console.error(
         "Google Calendar error on proposal approval:",
         calendarError,
       );
+      // The event exists but the booking doesn't reference it: remove it and
+      // don't advertise its meet link.
+      if (orphanedEventId) {
+        meetLink = null;
+        try {
+          await deleteGoogleCalendarEvent(user.id, orphanedEventId);
+        } catch (cleanupError) {
+          console.error("Failed to clean up orphaned event:", cleanupError);
+        }
+      }
     }
 
     try {

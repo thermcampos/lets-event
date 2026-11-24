@@ -1,11 +1,20 @@
-import { addDays, addHours, isAfter, isBefore } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { bookingHostSelect } from "@/lib/booking-host";
+import { getBookingLinks } from "@/lib/booking-links";
+import {
+  ACTIVE_BOOKING_STATUS,
+  overlapsRange,
+  validateBookingWindow,
+} from "@/lib/booking-rules";
 import {
   createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
   isGoogleCalendarConnected,
 } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingCreatedEmail } from "@/lib/resend";
+import { getWeekRange } from "@/lib/week";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +39,7 @@ export async function POST(request: NextRequest) {
     // Get event type
     const eventType = await prisma.eventType.findUnique({
       where: { id: eventTypeId },
+      include: { user: { select: { timezone: true } } },
     });
 
     if (!eventType) {
@@ -41,48 +51,19 @@ export async function POST(request: NextRequest) {
 
     const start = new Date(startTime);
     const end = new Date(endTime);
-    const now = new Date();
 
-    // Validate minimum notice
-    const minNoticeTime = addHours(now, eventType.minimumNoticeHours);
-    if (isBefore(start, minNoticeTime)) {
-      return NextResponse.json(
-        {
-          error: `Booking must be at least ${eventType.minimumNoticeHours} hours in advance`,
-        },
-        { status: 400 },
-      );
-    }
-
-    // Validate maximum notice
-    const maxNoticeTime = addDays(now, eventType.maximumNoticeDays);
-    if (isAfter(start, maxNoticeTime)) {
-      return NextResponse.json(
-        {
-          error: `Booking cannot be more than ${eventType.maximumNoticeDays} days in advance`,
-        },
-        { status: 400 },
-      );
+    // Validate ordering and notice window (shared with reschedule)
+    const windowError = validateBookingWindow(start, end, eventType);
+    if (windowError) {
+      return NextResponse.json({ error: windowError }, { status: 400 });
     }
 
     // Check for conflicts
     const conflictingBooking = await prisma.booking.findFirst({
       where: {
         eventTypeId,
-        status: {
-          not: "cancelled",
-        },
-        OR: [
-          {
-            AND: [{ startTime: { lte: start } }, { endTime: { gt: start } }],
-          },
-          {
-            AND: [{ startTime: { lt: end } }, { endTime: { gte: end } }],
-          },
-          {
-            AND: [{ startTime: { gte: start } }, { endTime: { lte: end } }],
-          },
-        ],
+        status: ACTIVE_BOOKING_STATUS,
+        ...overlapsRange(start, end),
       },
     });
 
@@ -95,12 +76,10 @@ export async function POST(request: NextRequest) {
 
     // Check max bookings per week if set
     if (eventType.maxBookingsPerWeek) {
-      const weekStart = new Date(start);
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekEnd.getDate() + 7);
+      const { start: weekStart, end: weekEnd } = getWeekRange(
+        start,
+        eventType.user.timezone,
+      );
 
       const weekBookings = await prisma.booking.count({
         where: {
@@ -110,9 +89,7 @@ export async function POST(request: NextRequest) {
             gte: weekStart,
             lt: weekEnd,
           },
-          status: {
-            not: "cancelled",
-          },
+          status: ACTIVE_BOOKING_STATUS,
         },
       });
 
@@ -138,17 +115,19 @@ export async function POST(request: NextRequest) {
       },
       include: {
         eventType: true,
-        user: true,
+        user: { select: bookingHostSelect },
       },
     });
 
+    // This route is public: never echo the host record back to the guest.
+    const { user: _host, ...publicBooking } = booking;
+
     // Try to create Google Calendar event
+    let orphanedEventId: string | null | undefined;
     try {
       const isConnected = await isGoogleCalendarConnected(eventType.userId);
       if (isConnected) {
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const cancelUrl = `${baseUrl}/api/bookings/${booking.id}/cancel`;
-        const rescheduleUrl = `${baseUrl}/booking/reschedule/${booking.id}`;
+        const { cancelUrl, rescheduleUrl } = getBookingLinks(booking.id);
 
         const descriptionParts = [
           `Meeting with ${guestName}`,
@@ -179,6 +158,8 @@ export async function POST(request: NextRequest) {
           },
         );
 
+        orphanedEventId = calendarEvent.eventId;
+
         // Update booking with Google Calendar info
         await prisma.booking.update({
           where: { id: booking.id },
@@ -187,6 +168,7 @@ export async function POST(request: NextRequest) {
             meetLink: calendarEvent.meetLink || null,
           },
         });
+        orphanedEventId = undefined; // booking now references the event
 
         // Send email notification
         try {
@@ -207,13 +189,21 @@ export async function POST(request: NextRequest) {
 
         // Return booking with calendar info
         return NextResponse.json(
-          { ...booking, meetLink: calendarEvent.meetLink },
+          { ...publicBooking, meetLink: calendarEvent.meetLink },
           { status: 201 },
         );
       }
     } catch (calendarError) {
       console.error("Google Calendar error:", calendarError);
-      // Continue without calendar event - booking was still created
+      // Continue without calendar event - booking was still created.
+      // If the event was created but never linked to the booking, remove it.
+      if (orphanedEventId) {
+        try {
+          await deleteGoogleCalendarEvent(eventType.userId, orphanedEventId);
+        } catch (cleanupError) {
+          console.error("Failed to clean up orphaned event:", cleanupError);
+        }
+      }
     }
 
     // Send email notification (no calendar integration)
@@ -232,7 +222,7 @@ export async function POST(request: NextRequest) {
       console.error("Email notification error:", emailError);
     }
 
-    return NextResponse.json(booking, { status: 201 });
+    return NextResponse.json(publicBooking, { status: 201 });
   } catch (error) {
     console.error("Booking creation error:", error);
     return NextResponse.json(
@@ -244,10 +234,16 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const bookings = await prisma.booking.findMany({
+      where: { userId: session.user.id },
       include: {
         eventType: true,
-        user: true,
       },
       orderBy: {
         startTime: "desc",
