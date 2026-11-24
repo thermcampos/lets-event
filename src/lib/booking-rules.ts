@@ -1,3 +1,4 @@
+import type { BookingStatus } from "@prisma/client";
 import { addDays, addHours, isAfter, isBefore } from "date-fns";
 
 export interface NoticeRules {
@@ -46,6 +47,6 @@ export function overlapsRange(start: Date, end: Date) {
  * pending (proposed) ones hold the slot. Use this everywhere bookings are
  * counted or checked for conflicts so the definitions can't drift apart.
  */
-export const ACTIVE_BOOKING_STATUS = {
+export const ACTIVE_BOOKING_STATUS: { notIn: BookingStatus[] } = {
   notIn: ["cancelled", "declined"],
 };
