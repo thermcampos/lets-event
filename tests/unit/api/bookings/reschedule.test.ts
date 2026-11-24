@@ -148,31 +148,32 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     );
   });
 
-  it("500 path: Google failure aborts before booking.update and email", async () => {
+  it("Google patch failure is best-effort: booking still moves, emails, redirects, old meetLink kept", async () => {
     prismaMock.booking.findUnique.mockResolvedValue(
-      buildBooking({ googleCalendarEventId: "ge-1" }),
+      buildBooking({ googleCalendarEventId: "ge-1", meetLink: "old" }),
     );
-    patch.mockRejectedValue(new Error("410 gone"));
+    patch.mockRejectedValue(new Error("google down"));
     const res = await call();
-    expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({
-      error: "Failed to update calendar event",
-    });
-    expect(prismaMock.booking.update).not.toHaveBeenCalled();
-    expect(sendEmail).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalled();
+    expect(prismaMock.booking.update).toHaveBeenCalledOnce();
+    expect(prismaMock.booking.update.mock.calls[0][0].data.meetLink).toBe(
+      "old",
+    );
+    expect(sendEmail).toHaveBeenCalledOnce();
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "https://app.test/booking/rescheduled/booking-1",
+    );
   });
 
-  it("500 when getGoogleCalendarClient itself fails", async () => {
+  it("a not-connected calendar is best-effort too", async () => {
     prismaMock.booking.findUnique.mockResolvedValue(
       buildBooking({ googleCalendarEventId: "ge-1" }),
     );
-    getClient.mockRejectedValue(new Error("no account"));
+    getClient.mockRejectedValue(new Error("Google Calendar not connected"));
     const res = await call();
-    expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({
-      error: "Failed to update calendar event",
-    });
-    expect(prismaMock.booking.update).not.toHaveBeenCalled();
+    expect(prismaMock.booking.update).toHaveBeenCalledOnce();
+    expect(res.status).toBe(307);
   });
 
   it("500 when an unexpected error is thrown (e.g. booking.update)", async () => {
@@ -216,14 +217,17 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       ],
       ["invalid start", { startTime: "not-a-date", endTime: body.endTime }],
       ["invalid end", { startTime: body.startTime, endTime: "not-a-date" }],
-    ])("400 for %s, without touching Google or the booking", async (_name, times) => {
-      const res = await call(times);
-      expect(res.status).toBe(400);
-      expect(prismaMock.booking.findFirst).not.toHaveBeenCalled();
-      expect(getClient).not.toHaveBeenCalled();
-      expect(prismaMock.booking.update).not.toHaveBeenCalled();
-      expect(sendEmail).not.toHaveBeenCalled();
-    });
+    ])(
+      "400 for %s, without touching Google or the booking",
+      async (_name, times) => {
+        const res = await call(times);
+        expect(res.status).toBe(400);
+        expect(prismaMock.booking.findFirst).not.toHaveBeenCalled();
+        expect(getClient).not.toHaveBeenCalled();
+        expect(prismaMock.booking.update).not.toHaveBeenCalled();
+        expect(sendEmail).not.toHaveBeenCalled();
+      },
+    );
 
     it("400 in the past", async () => {
       const res = await call({

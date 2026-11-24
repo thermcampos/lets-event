@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/bookings/route";
 import {
   createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
   isGoogleCalendarConnected,
 } from "@/lib/google-calendar";
 import { prisma as prismaImport } from "@/lib/prisma.server";
@@ -20,12 +21,14 @@ vi.mock("@/lib/prisma.server", async () => {
 vi.mock("@/lib/google-calendar", () => ({
   isGoogleCalendarConnected: vi.fn(),
   createGoogleCalendarEvent: vi.fn(),
+  deleteGoogleCalendarEvent: vi.fn(),
 }));
 vi.mock("@/lib/resend", () => ({ sendBookingCreatedEmail: vi.fn() }));
 
 const prisma = prismaImport as unknown as PrismaMock;
 const isConnected = vi.mocked(isGoogleCalendarConnected);
 const createEvent = vi.mocked(createGoogleCalendarEvent);
+const deleteEvent = vi.mocked(deleteGoogleCalendarEvent);
 const sendEmail = vi.mocked(sendBookingCreatedEmail);
 
 const NOW = new Date("2026-03-02T09:00:00Z");
@@ -77,18 +80,15 @@ describe("POST /api/bookings", () => {
   });
 
   describe("validation", () => {
-    it.each([
-      "eventTypeId",
-      "guestName",
-      "guestEmail",
-      "startTime",
-      "endTime",
-    ])("400 when %s is missing", async (field) => {
-      const res = await post(body({ [field]: undefined }));
-      expect(res.status).toBe(400);
-      expect(await res.json()).toEqual({ error: "Missing required fields" });
-      expect(prisma.booking.create).not.toHaveBeenCalled();
-    });
+    it.each(["eventTypeId", "guestName", "guestEmail", "startTime", "endTime"])(
+      "400 when %s is missing",
+      async (field) => {
+        const res = await post(body({ [field]: undefined }));
+        expect(res.status).toBe(400);
+        expect(await res.json()).toEqual({ error: "Missing required fields" });
+        expect(prisma.booking.create).not.toHaveBeenCalled();
+      },
+    );
 
     it("400 when a field is empty", async () => {
       const res = await post(body({ guestName: "" }));
@@ -226,13 +226,16 @@ describe("POST /api/bookings", () => {
       ["end equal to start", (s: string) => ({ startTime: s, endTime: s })],
       ["invalid start", (_s: string) => ({ startTime: "nope" })],
       ["invalid end", (s: string) => ({ startTime: s, endTime: "nope" })],
-    ])("400 for %s, before any conflict or weekly query", async (_name, make) => {
-      const start = new Date(NOW.getTime() + 48 * HOUR).toISOString();
-      const res = await post(body(make(start)));
-      expect(res.status).toBe(400);
-      expect(prisma.booking.findFirst).not.toHaveBeenCalled();
-      expect(prisma.booking.create).not.toHaveBeenCalled();
-    });
+    ])(
+      "400 for %s, before any conflict or weekly query",
+      async (_name, make) => {
+        const start = new Date(NOW.getTime() + 48 * HOUR).toISOString();
+        const res = await post(body(make(start)));
+        expect(res.status).toBe(400);
+        expect(prisma.booking.findFirst).not.toHaveBeenCalled();
+        expect(prisma.booking.create).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe("without Google Calendar", () => {
@@ -348,6 +351,31 @@ describe("POST /api/bookings", () => {
       expect(errorSpy).toHaveBeenCalled();
     });
 
+    it("orphan cleanup failure is logged and the booking is still 201", async () => {
+      createEvent.mockResolvedValue({ eventId: "g-1" } as never);
+      prisma.booking.update.mockRejectedValue(new Error("db down"));
+      deleteEvent.mockRejectedValue(new Error("google down"));
+      const res = await post();
+      expect(res.status).toBe(201);
+      expect(deleteEvent).toHaveBeenCalledOnce();
+      expect(errorSpy).toHaveBeenCalledWith(
+        "Failed to clean up orphaned event:",
+        expect.any(Error),
+      );
+    });
+
+    it("no cleanup when the event was linked to the booking", async () => {
+      createEvent.mockResolvedValue({ eventId: "g-1" } as never);
+      await post();
+      expect(deleteEvent).not.toHaveBeenCalled();
+    });
+
+    it("no cleanup when event creation itself failed", async () => {
+      createEvent.mockRejectedValue(new Error("google down"));
+      await post();
+      expect(deleteEvent).not.toHaveBeenCalled();
+    });
+
     it("createGoogleCalendarEvent throws and email throws -> still 201", async () => {
       createEvent.mockRejectedValue(new Error("google down"));
       sendEmail.mockRejectedValue(new Error("resend down"));
@@ -355,12 +383,16 @@ describe("POST /api/bookings", () => {
       expect(res.status).toBe(201);
     });
 
-    it("characterization: booking.update throws after insert -> 201, Google event orphaned, fallback email without meetLink", async () => {
+    it("booking.update throws after insert -> 201, the created Google event is deleted, fallback email without meetLink", async () => {
+      createEvent.mockResolvedValue({
+        eventId: "g-1",
+        meetLink: "https://meet.google.com/x",
+      } as never);
       prisma.booking.update.mockRejectedValue(new Error("db down"));
       const res = await post();
       expect(res.status).toBe(201);
       expect(createEvent).toHaveBeenCalledTimes(1);
-      // no cleanup of the created Google event is attempted
+      expect(deleteEvent).toHaveBeenCalledWith("user-1", "g-1");
       expect(sendEmail).toHaveBeenCalledTimes(1);
       expect(sendEmail.mock.calls[0][0]).not.toHaveProperty("meetLink");
       // the response is the plain booking row, not enriched with the link

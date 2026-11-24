@@ -134,11 +134,8 @@ export async function POST(
 
         meetLink = response.data.hangoutLink || booking.meetLink;
       } catch (error) {
+        // Best-effort, like cancel: the guest's reschedule still goes through.
         console.error("Failed to update Google Calendar event:", error);
-        return NextResponse.json(
-          { error: "Failed to update calendar event" },
-          { status: 500 },
-        );
       }
     }
 

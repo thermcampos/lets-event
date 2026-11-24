@@ -100,6 +100,20 @@ If Google Calendar integration fails:
 
 This ensures bookings are never lost due to calendar integration issues.
 
+### Policy: Google is best-effort everywhere
+
+The booking is the source of truth; the Google event is a mirror. Create,
+reschedule, cancel and proposal approval all behave the same way: a Google
+failure is logged and never blocks or rolls back the booking change.
+
+- **Already gone:** deleting an event Google reports as 404/410 counts as success.
+- **Orphaned event:** if an event is created but saving its id on the booking
+  fails, the event is deleted (best-effort) and no meet link is sent.
+- **Not connected:** an account without an access token *and* a refresh token is
+  treated as disconnected, so the host is prompted to reconnect in Settings.
+- **Token persistence:** failing to save a refreshed token is logged; the next
+  call simply refreshes again.
+
 ## Privacy & Security
 
 - Tokens are encrypted in the database

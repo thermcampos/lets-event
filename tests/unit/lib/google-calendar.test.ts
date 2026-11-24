@@ -69,6 +69,15 @@ describe("google-calendar", () => {
       );
     });
 
+    it("throws when there is no refresh_token (cannot survive token expiry)", async () => {
+      prismaMock.account.findFirst.mockResolvedValue(
+        buildAccount({ refresh_token: null }),
+      );
+      await expect(getGoogleCalendarClient("user-1")).rejects.toThrow(
+        "Google Calendar not connected",
+      );
+    });
+
     it("throws when access_token is null", async () => {
       prismaMock.account.findFirst.mockResolvedValue(
         buildAccount({ access_token: null }),
@@ -368,12 +377,15 @@ describe("google-calendar", () => {
       });
     });
 
-    it("characterization: falsy fields (empty summary/description) are not sent", async () => {
+    it("empty summary/description are sent so they can clear the fields", async () => {
       await updateGoogleCalendarEvent("user-1", "ge-1", {
         summary: "",
         description: "",
       });
-      expect(g.events.patch.mock.calls[0][0].requestBody).toEqual({});
+      expect(g.events.patch.mock.calls[0][0].requestBody).toEqual({
+        summary: "",
+        description: "",
+      });
     });
 
     it("characterization: an empty attendees array is sent (clears attendees)", async () => {
@@ -440,6 +452,13 @@ describe("google-calendar", () => {
 
     it("is false when there is no account", async () => {
       prismaMock.account.findFirst.mockResolvedValue(null);
+      await expect(isGoogleCalendarConnected("user-1")).resolves.toBe(false);
+    });
+
+    it("is false when there is no refresh_token", async () => {
+      prismaMock.account.findFirst.mockResolvedValue(
+        buildAccount({ refresh_token: null }),
+      );
       await expect(isGoogleCalendarConnected("user-1")).resolves.toBe(false);
     });
 
