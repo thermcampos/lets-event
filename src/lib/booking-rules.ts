@@ -1,3 +1,4 @@
+import type { BookingStatus } from "@prisma/client";
 import { addDays, addHours, isAfter, isBefore } from "date-fns";
 
 export interface NoticeRules {
@@ -39,3 +40,13 @@ export function validateBookingWindow(
 export function overlapsRange(start: Date, end: Date) {
   return { startTime: { lt: end }, endTime: { gt: start } };
 }
+
+/**
+ * Prisma `status` filter for bookings that still occupy time and count toward
+ * the weekly cap. Cancelled and declined bookings are released; confirmed and
+ * pending (proposed) ones hold the slot. Use this everywhere bookings are
+ * counted or checked for conflicts so the definitions can't drift apart.
+ */
+export const ACTIVE_BOOKING_STATUS: { notIn: BookingStatus[] } = {
+  notIn: ["cancelled", "declined"],
+};
