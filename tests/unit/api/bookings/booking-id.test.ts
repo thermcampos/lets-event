@@ -151,15 +151,18 @@ describe("PATCH /api/bookings/[id]", () => {
   });
 
   describe("status updates", () => {
-    it.each(["proposed", "confirmed", "declined", "cancelled", "completed"])(
-      "accepts status %s",
-      async (status) => {
-        const res = await patch({ status });
-        expect(res.status).toBe(200);
-        expect((await res.json()).status).toBe(status);
-        expect(prisma.booking.update.mock.calls[0][0].data).toEqual({ status });
-      },
-    );
+    it.each([
+      "proposed",
+      "confirmed",
+      "declined",
+      "cancelled",
+      "completed",
+    ])("accepts status %s", async (status) => {
+      const res = await patch({ status });
+      expect(res.status).toBe(200);
+      expect((await res.json()).status).toBe(status);
+      expect(prisma.booking.update.mock.calls[0][0].data).toEqual({ status });
+    });
 
     it("sends the host a status-changed email with user timezone", async () => {
       prisma.user.findUnique.mockResolvedValue(

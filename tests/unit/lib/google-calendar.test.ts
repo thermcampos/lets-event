@@ -410,15 +410,16 @@ describe("google-calendar", () => {
       ).resolves.toBeUndefined();
     });
 
-    it.each([{ code: 403 }, { code: 500 }, new Error("boom")])(
-      "still rethrows other failures (%o)",
-      async (err) => {
-        g.events.delete.mockRejectedValue(err);
-        await expect(deleteGoogleCalendarEvent("user-1", "ge-1")).rejects.toBe(
-          err,
-        );
-      },
-    );
+    it.each([
+      { code: 403 },
+      { code: 500 },
+      new Error("boom"),
+    ])("still rethrows other failures (%o)", async (err) => {
+      g.events.delete.mockRejectedValue(err);
+      await expect(deleteGoogleCalendarEvent("user-1", "ge-1")).rejects.toBe(
+        err,
+      );
+    });
   });
 
   describe("isEventGoneError", () => {
@@ -498,14 +499,13 @@ describe("google-calendar", () => {
     });
 
     // 404/410 on delete are treated as success (see deleteGoogleCalendarEvent).
-    it.each(errors.filter(([n]) => n !== "404" && n !== "410"))(
-      "delete rejecting with %s",
-      async (_n, error) => {
-        g.events.delete.mockRejectedValue(error);
-        await expect(deleteGoogleCalendarEvent("user-1", "ge-1")).rejects.toBe(
-          error,
-        );
-      },
-    );
+    it.each(
+      errors.filter(([n]) => n !== "404" && n !== "410"),
+    )("delete rejecting with %s", async (_n, error) => {
+      g.events.delete.mockRejectedValue(error);
+      await expect(deleteGoogleCalendarEvent("user-1", "ge-1")).rejects.toBe(
+        error,
+      );
+    });
   });
 });
