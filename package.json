@@ -8,8 +8,8 @@
     "vercel-build": "prisma migrate deploy && prisma generate && next build --webpack",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "npx --yes @biomejs/biome@2.4.4 check .",
-    "format": "npx --yes @biomejs/biome@2.4.4 format --write .",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
     "test": "playwright test",
     "test:unit": "vitest run",
@@ -53,7 +53,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.6",
+    "@biomejs/biome": "2.4.4",
     "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "^4.3.4",
     "@testing-library/jest-dom": "^6.9.1",
