@@ -1,5 +1,6 @@
 import { fromZonedTime } from "date-fns-tz";
 import { type NextRequest, NextResponse } from "next/server";
+import { ACTIVE_BOOKING_STATUS } from "@/lib/booking-rules";
 import { prisma } from "@/lib/prisma.server";
 import { getAvailableSlots } from "@/lib/slots";
 import { getWeekRange } from "@/lib/week";
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
         where: {
           eventTypeId: eventType.id,
           startTime: { gte: weekStart, lt: weekEnd },
-          status: { not: "cancelled" },
+          status: ACTIVE_BOOKING_STATUS,
           ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
         },
       });
@@ -81,9 +82,7 @@ export async function GET(request: NextRequest) {
           gte: startOfDate,
           lt: endOfDate,
         },
-        status: {
-          not: "cancelled",
-        },
+        status: ACTIVE_BOOKING_STATUS,
       },
     });
 

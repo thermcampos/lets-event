@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { overlapsRange, validateBookingWindow } from "@/lib/booking-rules";
+import {
+  ACTIVE_BOOKING_STATUS,
+  overlapsRange,
+  validateBookingWindow,
+} from "@/lib/booking-rules";
 import { getGoogleCalendarClient } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingRescheduledEmail } from "@/lib/resend";
@@ -59,7 +63,7 @@ export async function POST(
       where: {
         eventTypeId: booking.eventTypeId,
         id: { not: id },
-        status: { not: "cancelled" },
+        status: ACTIVE_BOOKING_STATUS,
         ...overlapsRange(newStartTime, newEndTime),
       },
     });
@@ -83,7 +87,7 @@ export async function POST(
           eventTypeId: booking.eventTypeId,
           id: { not: id },
           startTime: { gte: weekStart, lt: weekEnd },
-          status: { not: "cancelled" },
+          status: ACTIVE_BOOKING_STATUS,
         },
       });
 

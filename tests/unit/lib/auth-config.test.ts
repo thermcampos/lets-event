@@ -29,24 +29,24 @@ describe("authConfig", () => {
       expect(result).toEqual({});
     });
 
-    it("characterization: exposes accessToken and refreshToken on the session", async () => {
+    it("does not expose Google tokens on the session", async () => {
       const result = await session({
         session: { user: {} },
         token: { sub: "u", accessToken: "access-1", refreshToken: "refresh-1" },
       });
-      expect(result.accessToken).toBe("access-1");
-      expect(result.refreshToken).toBe("refresh-1");
+      expect(result).not.toHaveProperty("accessToken");
+      expect(result).not.toHaveProperty("refreshToken");
     });
   });
 
   describe("jwt callback", () => {
-    it("copies account tokens into the token on sign-in", async () => {
+    it("does not copy account tokens into the token on sign-in", async () => {
       const token = await jwt({
         token: {},
         account: { access_token: "a", refresh_token: "r" },
       });
-      expect(token.accessToken).toBe("a");
-      expect(token.refreshToken).toBe("r");
+      expect(token).not.toHaveProperty("accessToken");
+      expect(token).not.toHaveProperty("refreshToken");
     });
 
     it("copies user.id into sub", async () => {
@@ -56,9 +56,9 @@ describe("authConfig", () => {
 
     it("leaves the token unchanged on later calls (no account/user)", async () => {
       const token = await jwt({
-        token: { sub: "u", accessToken: "a", refreshToken: "r" },
+        token: { sub: "u" },
       });
-      expect(token).toEqual({ sub: "u", accessToken: "a", refreshToken: "r" });
+      expect(token).toEqual({ sub: "u" });
     });
   });
 });

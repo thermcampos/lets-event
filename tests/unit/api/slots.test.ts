@@ -83,7 +83,7 @@ describe("GET /api/slots", () => {
       gte: new Date("2026-03-04T05:00:00Z"),
       lt: new Date("2026-03-05T05:00:00Z"),
     });
-    expect(where.status).toEqual({ not: "cancelled" });
+    expect(where.status).toEqual({ notIn: ["cancelled", "declined"] });
   });
 
   it("filters out slots inside the minimum notice window", async () => {
@@ -113,7 +113,7 @@ describe("GET /api/slots", () => {
         gte: new Date("2026-03-01T00:00:00Z"),
         lt: new Date("2026-03-08T00:00:00Z"),
       });
-      expect(where.status).toEqual({ not: "cancelled" });
+      expect(where.status).toEqual({ notIn: ["cancelled", "declined"] });
       expect(where.id).toBeUndefined();
     });
 

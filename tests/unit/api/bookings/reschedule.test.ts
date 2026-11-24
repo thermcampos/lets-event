@@ -292,7 +292,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       const { where } = prismaMock.booking.findFirst.mock.calls[0][0];
       expect(where.eventTypeId).toBe("evt-type-1");
       expect(where.id).toEqual({ not: "booking-1" });
-      expect(where.status).toEqual({ not: "cancelled" });
+      expect(where.status).toEqual({ notIn: ["cancelled", "declined"] });
       // overlap: existing.start < new.end && existing.end > new.start
       expect(where.startTime).toEqual({ lt: new Date(body.endTime) });
       expect(where.endTime).toEqual({ gt: new Date(body.startTime) });

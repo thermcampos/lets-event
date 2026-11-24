@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { overlapsRange, validateBookingWindow } from "@/lib/booking-rules";
+import {
+  ACTIVE_BOOKING_STATUS,
+  overlapsRange,
+  validateBookingWindow,
+} from "@/lib/booking-rules";
 
 const NOW = new Date("2026-03-02T09:00:00Z");
 const HOUR = 3_600_000;
@@ -69,5 +73,13 @@ describe("overlapsRange", () => {
       startTime: { lt: end },
       endTime: { gt: start },
     });
+  });
+});
+
+describe("ACTIVE_BOOKING_STATUS", () => {
+  it("releases cancelled and declined bookings but keeps confirmed and proposed", () => {
+    expect(ACTIVE_BOOKING_STATUS.notIn).toEqual(["cancelled", "declined"]);
+    expect(ACTIVE_BOOKING_STATUS.notIn).not.toContain("confirmed");
+    expect(ACTIVE_BOOKING_STATUS.notIn).not.toContain("proposed");
   });
 });
