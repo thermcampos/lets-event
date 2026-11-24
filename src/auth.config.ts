@@ -12,16 +12,12 @@ export const authConfig = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub as string;
-        session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
       }
       return session;
     },
-    async jwt({ token, user, account }) {
-      if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-      }
+    // Google tokens are deliberately not stored in the JWT or session: server
+    // code reads (and refreshes) them from the Account row instead.
+    async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
       }
