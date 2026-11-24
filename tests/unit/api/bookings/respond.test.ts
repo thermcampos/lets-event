@@ -83,14 +83,14 @@ describe("POST /api/bookings/[id]/respond", () => {
       expect(res.status).toBe(401);
     });
 
-    it.each([{}, { action: "maybe" }])(
-      "400 for invalid action %j",
-      async (b) => {
-        const res = await respond(b);
-        expect(res.status).toBe(400);
-        expect((await res.json()).error).toContain("approve");
-      },
-    );
+    it.each([
+      {},
+      { action: "maybe" },
+    ])("400 for invalid action %j", async (b) => {
+      const res = await respond(b);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toContain("approve");
+    });
 
     it("404 when user not found", async () => {
       prisma.user.findUnique.mockResolvedValue(null);
@@ -110,18 +110,19 @@ describe("POST /api/bookings/[id]/respond", () => {
       });
     });
 
-    it.each(["confirmed", "declined", "cancelled"])(
-      "400 when booking is %s (not proposed)",
-      async (status) => {
-        mockBooking({ status });
-        const res = await respond({ action: "decline" });
-        expect(res.status).toBe(400);
-        expect(await res.json()).toEqual({
-          error: "Only proposed bookings can be approved or declined",
-        });
-        expect(prisma.booking.update).not.toHaveBeenCalled();
-      },
-    );
+    it.each([
+      "confirmed",
+      "declined",
+      "cancelled",
+    ])("400 when booking is %s (not proposed)", async (status) => {
+      mockBooking({ status });
+      const res = await respond({ action: "decline" });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({
+        error: "Only proposed bookings can be approved or declined",
+      });
+      expect(prisma.booking.update).not.toHaveBeenCalled();
+    });
 
     it("500 on malformed JSON", async () => {
       const res = await POST(
