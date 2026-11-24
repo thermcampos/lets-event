@@ -24,13 +24,25 @@ import { GET, POST } from "@/app/api/bookings/[id]/cancel/route";
 useTestEnv();
 
 const url = "https://app.test/api/bookings/booking-1/cancel";
-const handlers = {
-  POST: () => POST(jsonRequest(url), params({ id: "booking-1" })),
-  GET: () => GET(getRequest(url), params({ id: "booking-1" })),
-} as const;
+const call = () => POST(jsonRequest(url), params({ id: "booking-1" }));
 
-describe.each(["POST", "GET"] as const)("cancel route via %s", (method) => {
-  const call = handlers[method];
+describe("GET (link from old emails/calendar events)", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("only redirects to the confirmation page: no lookup, no cancel, no Google, no email", async () => {
+    const res = await GET(getRequest(url), params({ id: "booking-1" }));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(
+      "https://app.test/booking/cancel/booking-1",
+    );
+    expect(prismaMock.booking.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.booking.update).not.toHaveBeenCalled();
+    expect(deleteEvent).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe("cancel route via POST", () => {
   let errorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {

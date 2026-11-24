@@ -232,7 +232,7 @@ describe("google-calendar", () => {
           description: [
             "Chat",
             "---",
-            "Cancel this booking: https://app.test/api/bookings/b-1/cancel",
+            "Cancel this booking: https://app.test/booking/cancel/b-1",
             "Reschedule this booking: https://app.test/booking/reschedule/b-1",
           ].join("\n"),
           start: { dateTime: "2026-03-02T10:00:00.000Z" },
@@ -285,7 +285,7 @@ describe("google-calendar", () => {
       });
       const desc = g.events.insert.mock.calls[0][0].requestBody.description;
       expect(desc).toBe(
-        "---\nCancel this booking: https://app.test/api/bookings/b-1/cancel\nReschedule this booking: https://app.test/booking/reschedule/b-1",
+        "---\nCancel this booking: https://app.test/booking/cancel/b-1\nReschedule this booking: https://app.test/booking/reschedule/b-1",
       );
     });
 
@@ -314,7 +314,7 @@ describe("google-calendar", () => {
         bookingId: "b-1",
       });
       const desc = g.events.insert.mock.calls[0][0].requestBody.description;
-      expect(desc).toContain("http://localhost:3000/api/bookings/b-1/cancel");
+      expect(desc).toContain("http://localhost:3000/booking/cancel/b-1");
       expect(desc).toContain("http://localhost:3000/booking/reschedule/b-1");
     });
 

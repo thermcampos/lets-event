@@ -70,7 +70,7 @@ export async function createGoogleCalendarEvent(
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const cancelUrl = event.bookingId
-    ? `${baseUrl}/api/bookings/${event.bookingId}/cancel`
+    ? `${baseUrl}/booking/cancel/${event.bookingId}`
     : "";
   const rescheduleUrl = event.bookingId
     ? `${baseUrl}/booking/reschedule/${event.bookingId}`
