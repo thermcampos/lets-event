@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/bookings/[id]/respond/route";
 import { auth } from "@/auth";
+import { signBookingToken } from "@/lib/booking-token";
 import {
   createGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
@@ -52,6 +53,10 @@ function mockBooking(overrides: Record<string, unknown>) {
     .mockResolvedValueOnce(buildBooking(overrides))
     .mockResolvedValue(null);
 }
+
+// Links expire at the booking's end time.
+const linkToken = () =>
+  signBookingToken("booking-1", buildBooking().endTime as Date);
 
 function respond(b: unknown) {
   return POST(
@@ -246,8 +251,8 @@ describe("POST /api/bookings/[id]/respond", () => {
             "Notes: notes",
             "Guest message: please",
             "---",
-            "Cancel this booking: https://app.test/booking/cancel/booking-1",
-            "Reschedule this booking: https://app.test/booking/reschedule/booking-1",
+            `Cancel this booking: https://app.test/booking/cancel/booking-1?token=${linkToken()}`,
+            `Reschedule this booking: https://app.test/booking/reschedule/booking-1?token=${linkToken()}`,
           ].join("\n"),
         );
         // calls[0] confirms in the transaction, calls[1] stores google info
@@ -271,8 +276,8 @@ describe("POST /api/bookings/[id]/respond", () => {
             "Meeting with Guest",
             "Email: guest@example.com",
             "---",
-            "Cancel this booking: https://app.test/booking/cancel/booking-1",
-            "Reschedule this booking: https://app.test/booking/reschedule/booking-1",
+            `Cancel this booking: https://app.test/booking/cancel/booking-1?token=${linkToken()}`,
+            `Reschedule this booking: https://app.test/booking/reschedule/booking-1?token=${linkToken()}`,
           ].join("\n"),
         );
         expect(prisma.booking.update.mock.calls[1][0].data).toEqual({

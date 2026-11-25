@@ -134,7 +134,7 @@ export async function POST(
       if (isConnected) {
         const calendarEvent = await createGoogleCalendarEvent(user.id, {
           summary: booking.eventType.title,
-          description: buildBookingDescription(booking.id, [
+          description: buildBookingDescription(booking.id, booking.endTime, [
             `Meeting with ${booking.guestName}`,
             `Email: ${booking.guestEmail}`,
             booking.guestNotes && `Notes: ${booking.guestNotes}`,

@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
           eventType.userId,
           {
             summary: eventType.title,
-            description: buildBookingDescription(booking.id, [
+            description: buildBookingDescription(booking.id, end, [
               `Meeting with ${guestName}`,
               `Email: ${guestEmail}`,
               guestNotes && `Notes:\n${guestNotes}`,

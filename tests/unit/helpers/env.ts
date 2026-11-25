@@ -7,6 +7,7 @@ export function useTestEnv(overrides: Record<string, string> = {}) {
   beforeEach(() => {
     process.env.TZ = "UTC";
     vi.stubEnv("NEXTAUTH_URL", "https://app.test");
+    vi.stubEnv("AUTH_SECRET", "test-secret");
     vi.stubEnv("GOOGLE_CLIENT_ID", "client-id");
     vi.stubEnv("GOOGLE_CLIENT_SECRET", "client-secret");
     for (const [key, value] of Object.entries(overrides)) {

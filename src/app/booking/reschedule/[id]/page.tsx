@@ -34,6 +34,7 @@ interface BookingDetails {
 export default function ReschedulePage({ params }: ReschedulePageProps) {
   const router = useRouter();
   const [bookingId, setBookingId] = useState<string>("");
+  const [token, setToken] = useState<string>("");
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -42,6 +43,7 @@ export default function ReschedulePage({ params }: ReschedulePageProps) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    setToken(new URLSearchParams(window.location.search).get("token") ?? "");
     params.then((p) => {
       setBookingId(p.id);
       fetch(`/api/bookings/${p.id}`)
@@ -91,16 +93,19 @@ export default function ReschedulePage({ params }: ReschedulePageProps) {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/reschedule`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/bookings/${bookingId}/reschedule${token ? `?token=${encodeURIComponent(token)}` : ""}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            startTime: selectedSlot.start.toISOString(),
+            endTime: selectedSlot.end.toISOString(),
+          }),
         },
-        body: JSON.stringify({
-          startTime: selectedSlot.start.toISOString(),
-          endTime: selectedSlot.end.toISOString(),
-        }),
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
