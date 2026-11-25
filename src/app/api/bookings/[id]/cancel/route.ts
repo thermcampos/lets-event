@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { canManageBooking, getBookingToken } from "@/lib/booking-access";
 import { deleteGoogleCalendarEvent } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { sendBookingCancelledEmail } from "@/lib/resend";
 
-async function cancelBooking(id: string) {
+async function cancelBooking(id: string, token: string | null) {
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: {
@@ -14,6 +15,13 @@ async function cancelBooking(id: string) {
 
   if (!booking) {
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+  }
+
+  if (!(await canManageBooking(booking, token))) {
+    return NextResponse.json(
+      { error: "Invalid or expired link" },
+      { status: 403 },
+    );
   }
 
   if (booking.status === "cancelled") {
@@ -62,12 +70,12 @@ async function cancelBooking(id: string) {
 }
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    return await cancelBooking(id);
+    return await cancelBooking(id, getBookingToken(request));
   } catch (error) {
     console.error("Error cancelling booking:", error);
     return NextResponse.json(
@@ -79,12 +87,15 @@ export async function POST(
 
 // GET must never change state: mail scanners, link previewers and prefetchers
 // follow links. Links created before this change point here, so send them to
-// the confirmation page, where the guest confirms and the page POSTs.
+// the confirmation page, where the guest confirms and the page POSTs. The
+// token (if any) is carried over so the page can send it with the POST.
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  return NextResponse.redirect(`${baseUrl}/booking/cancel/${id}`);
+  const token = getBookingToken(request);
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  return NextResponse.redirect(`${baseUrl}/booking/cancel/${id}${query}`);
 }

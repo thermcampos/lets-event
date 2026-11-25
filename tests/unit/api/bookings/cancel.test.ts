@@ -4,7 +4,8 @@ import { buildBooking } from "../../helpers/builders";
 import { useTestEnv } from "../../helpers/env";
 import { getRequest, jsonRequest, params } from "../../helpers/route";
 
-const { prismaMock, deleteEvent, sendEmail } = vi.hoisted(() => ({
+const { prismaMock, deleteEvent, sendEmail, authMock } = vi.hoisted(() => ({
+  authMock: vi.fn(),
   deleteEvent: vi.fn(),
   sendEmail: vi.fn(),
   prismaMock: {
@@ -12,6 +13,7 @@ const { prismaMock, deleteEvent, sendEmail } = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("@/auth", () => ({ auth: authMock }));
 vi.mock("@/lib/prisma.server", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/google-calendar", () => ({
   deleteGoogleCalendarEvent: deleteEvent,
@@ -19,12 +21,19 @@ vi.mock("@/lib/google-calendar", () => ({
 vi.mock("@/lib/resend", () => ({ sendBookingCancelledEmail: sendEmail }));
 
 import { GET, POST } from "@/app/api/bookings/[id]/cancel/route";
+import { signBookingToken } from "@/lib/booking-token";
 
 // biome-ignore lint/correctness/useHookAtTopLevel: not a React hook
 useTestEnv();
 
 const url = "https://app.test/api/bookings/booking-1/cancel";
-const call = () => POST(jsonRequest(url), params({ id: "booking-1" }));
+const validToken = () =>
+  signBookingToken("booking-1", new Date("2099-01-01T00:00:00Z"));
+const call = (token: string | null = validToken()) =>
+  POST(
+    jsonRequest(token ? `${url}?token=${token}` : url),
+    params({ id: "booking-1" }),
+  );
 
 describe("GET (link from old emails/calendar events)", () => {
   beforeEach(() => vi.resetAllMocks());
@@ -39,6 +48,62 @@ describe("GET (link from old emails/calendar events)", () => {
     expect(prismaMock.booking.update).not.toHaveBeenCalled();
     expect(deleteEvent).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET keeps the token on the confirmation page link", () => {
+  it("forwards ?token= to the page", async () => {
+    const res = await GET(
+      getRequest(`${url}?token=1.abc`),
+      params({ id: "booking-1" }),
+    );
+    expect(res.headers.get("location")).toBe(
+      "https://app.test/booking/cancel/booking-1?token=1.abc",
+    );
+  });
+});
+
+describe("cancel route authorization", () => {
+  let errorSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    deleteEvent.mockResolvedValue(undefined);
+    sendEmail.mockResolvedValue(undefined);
+    prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
+  });
+  afterEach(() => {
+    errorSpy.mockRestore();
+    vi.unstubAllEnvs();
+  });
+
+  const denied = async (res: Response) => {
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "Invalid or expired link" });
+    expect(prismaMock.booking.update).not.toHaveBeenCalled();
+    expect(deleteEvent).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  };
+
+  it("403 without a token", async () => denied(await call(null)));
+  it("403 with a garbage token", async () => denied(await call("nope")));
+  it("403 with a token signed for another booking", async () =>
+    denied(
+      await call(signBookingToken("other", new Date("2099-01-01T00:00:00Z"))),
+    ));
+  it("403 with an expired token", async () =>
+    denied(await call(signBookingToken("booking-1", new Date("2020-01-01")))));
+
+  it("allows the signed-in host who owns the booking, without a token", async () => {
+    authMock.mockResolvedValue({ user: { id: "user-1" } });
+    expect((await call(null)).status).toBe(307);
+    expect(prismaMock.booking.update).toHaveBeenCalledOnce();
+  });
+
+  it("denies a different signed-in user", async () => {
+    authMock.mockResolvedValue({ user: { id: "user-2" } });
+    await denied(await call(null));
   });
 });
 
