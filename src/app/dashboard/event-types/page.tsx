@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { deleteEventType } from "@/lib/actions/event-types";
 import { prisma } from "@/lib/prisma.server";
 
 export default async function EventTypesPage() {
@@ -128,9 +129,7 @@ export default async function EventTypesPage() {
                     <form
                       action={async () => {
                         "use server";
-                        await prisma.eventType.delete({
-                          where: { id: eventType.id },
-                        });
+                        await deleteEventType(eventType.id);
                       }}
                     >
                       <Button

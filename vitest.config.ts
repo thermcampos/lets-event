@@ -42,6 +42,7 @@ export default defineConfig({
         "src/lib/slots.ts": { lines: 97, branches: 95 },
         "src/lib/utils.ts": { lines: 97, branches: 95 },
         "src/app/api/bookings/**": { lines: 97, branches: 90 },
+        "src/lib/actions/**": { lines: 97, branches: 90 },
         "src/auth.config.ts": { lines: 100 },
         "src/auth.ts": { lines: 97 },
         "src/proxy.ts": { lines: 97 },

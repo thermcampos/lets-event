@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
@@ -8,6 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  disconnectGoogleCalendar as disconnectGoogle,
+  updateSettings as saveSettings,
+} from "@/lib/actions/settings";
 import { isGoogleCalendarConnected } from "@/lib/google-calendar";
 import { prisma } from "@/lib/prisma.server";
 import { AvatarUpload } from "./avatar-upload";
@@ -41,55 +44,12 @@ export default async function SettingsPage() {
 
   async function disconnectGoogleCalendar() {
     "use server";
-    const session = await auth();
-    if (!session?.user?.id) return;
-
-    await prisma.account.deleteMany({
-      where: {
-        userId: session.user.id,
-        provider: "google",
-      },
-    });
-
-    redirect("/dashboard/settings");
+    await disconnectGoogle();
   }
 
-  async function updateSettings(_prevState: any, formData: FormData) {
+  async function updateSettings(prevState: unknown, formData: FormData) {
     "use server";
-    const session = await auth();
-    if (!session?.user) return { error: "Not authenticated" };
-
-    const username = formData.get("username") as string;
-    const name = formData.get("name") as string;
-    const timezone = formData.get("timezone") as string;
-
-    // Check if username is already taken
-    if (username) {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          username,
-          NOT: { id: session.user.id },
-        },
-      });
-
-      if (existingUser) {
-        return { error: "Username already taken" };
-      }
-    }
-
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        username: username || null,
-        name,
-        timezone,
-      },
-    });
-
-    // Refresh the whole dashboard (the nav shows the name too) and return
-    // success so the form can show a confirmation toast.
-    revalidatePath("/dashboard", "layout");
-    return { success: true };
+    return await saveSettings(prevState, formData);
   }
 
   return (
