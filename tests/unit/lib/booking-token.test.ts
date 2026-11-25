@@ -1,10 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
-import {
-  legacyLinksAllowed,
-  signBookingToken,
-  verifyBookingToken,
-} from "@/lib/booking-token";
+import { signBookingToken, verifyBookingToken } from "@/lib/booking-token";
 import { useTestEnv } from "../helpers/env";
 
 // biome-ignore lint/correctness/useHookAtTopLevel: not a React hook; registers vitest hooks
@@ -73,22 +69,5 @@ describe("booking token", () => {
     vi.stubEnv("AUTH_SECRET", "");
     vi.stubEnv("NEXTAUTH_SECRET", "");
     expect(() => signBookingToken("b-1", EXPIRY)).toThrow(/AUTH_SECRET/);
-  });
-});
-
-describe("legacyLinksAllowed", () => {
-  it("is off by default", () => {
-    expect(legacyLinksAllowed(BEFORE)).toBe(false);
-  });
-
-  it("is on until the configured date, then off", () => {
-    vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2026-03-02T00:00:00Z");
-    expect(legacyLinksAllowed(BEFORE)).toBe(true);
-    expect(legacyLinksAllowed(AFTER)).toBe(false);
-  });
-
-  it("ignores an unparseable value", () => {
-    vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "soon");
-    expect(legacyLinksAllowed(BEFORE)).toBe(false);
   });
 });

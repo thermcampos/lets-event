@@ -105,20 +105,6 @@ describe("cancel route authorization", () => {
     authMock.mockResolvedValue({ user: { id: "user-2" } });
     await denied(await call(null));
   });
-
-  it("accepts token-less requests only during the legacy grace period", async () => {
-    vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2099-01-01T00:00:00Z");
-    expect((await call(null)).status).toBe(307);
-    // A present-but-invalid token is never excused by the grace period.
-    vi.clearAllMocks();
-    prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
-    await denied(await call("nope"));
-  });
-
-  it("ignores an elapsed grace period", async () => {
-    vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2020-01-01T00:00:00Z");
-    await denied(await call(null));
-  });
 });
 
 describe("cancel route via POST", () => {

@@ -41,13 +41,3 @@ export function verifyBookingToken(
   const actual = Buffer.from(mac);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
-
-/**
- * Grace period for links created before tokens existed. Set
- * BOOKING_LINK_LEGACY_UNTIL to an ISO date to accept token-less requests until
- * then; unset (the default) means tokens are always required.
- */
-export function legacyLinksAllowed(now: Date = new Date()) {
-  const until = Date.parse(process.env.BOOKING_LINK_LEGACY_UNTIL ?? "");
-  return Number.isFinite(until) && now.getTime() < until;
-}

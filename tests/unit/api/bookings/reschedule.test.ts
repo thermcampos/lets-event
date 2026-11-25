@@ -117,16 +117,6 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       await denied(await call(body, null));
     });
 
-    it("accepts token-less requests only during the legacy grace period", async () => {
-      vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2099-01-01T00:00:00Z");
-      expect((await call(body, null)).status).toBe(307);
-    });
-
-    it("ignores an elapsed grace period", async () => {
-      vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2020-01-01T00:00:00Z");
-      await denied(await call(body, null));
-    });
-
     it("re-signs the calendar links to expire at the new end time", async () => {
       prismaMock.booking.findUnique.mockResolvedValue(
         buildBooking({ googleCalendarEventId: "ge-1" }),

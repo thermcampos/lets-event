@@ -184,7 +184,7 @@ Cancelled bookings are excluded from slot availability calculations.
 
 ### Guest Cancel/Reschedule Links
 
-Links carry an HMAC-signed `?token=` (`lib/booking-token.ts`, keyed by `AUTH_SECRET`, expires at the booking's end time). Both POST routes require a valid token or the signed-in host who owns the booking (`lib/booking-access.ts`). Always build links with `getBookingLinks(id, expiresAt)`. Token-less links work only while `BOOKING_LINK_LEGACY_UNTIL` is in the future (unset by default).
+Links carry an HMAC-signed `?token=` (`lib/booking-token.ts`, keyed by `AUTH_SECRET`, expires at the booking's end time). Both POST routes require a valid token or the signed-in host who owns the booking (`lib/booking-access.ts`). Always build links with `getBookingLinks(id, expiresAt)`.
 
 ### Middleware Auth Flow
 
