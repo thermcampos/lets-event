@@ -1,6 +1,8 @@
 // @vitest-environment node
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/bookings/route";
+import { signBookingToken } from "@/lib/booking-token";
 import {
   createGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
@@ -285,18 +287,17 @@ describe("POST /api/bookings", () => {
       expect(createEvent).toHaveBeenCalledTimes(1);
       const [userId, input] = createEvent.mock.calls[0];
       expect(userId).toBe("user-1");
-      expect(input.bookingId).toBe("booking-1");
       expect(input.summary).toBe("30 Minute Meeting");
       expect(input.attendees).toEqual(["guest@example.com"]);
       expect(input.description).toContain("Meeting with Guest");
       expect(input.description).toContain("Email: guest@example.com");
       expect(input.description).toContain("Notes:\nhello");
+      const token = signBookingToken("booking-1", new Date(input.endTime));
       expect(input.description).toContain(
-        "Cancel: https://app.test/booking/cancel/booking-1",
+        `Cancel this booking: https://app.test/booking/cancel/booking-1?token=${token}\nReschedule this booking: https://app.test/booking/reschedule/booking-1?token=${token}`,
       );
-      expect(input.description).toContain(
-        "Reschedule: https://app.test/booking/reschedule/booking-1",
-      );
+      // One link block only (the lib no longer appends a second one).
+      expect(input.description?.match(/Cancel this booking/g)).toHaveLength(1);
 
       expect(prisma.booking.update).toHaveBeenCalledWith({
         where: { id: "booking-1" },

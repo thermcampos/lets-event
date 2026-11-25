@@ -219,22 +219,14 @@ describe("google-calendar", () => {
     });
 
     it("sends the exact insert payload and returns ids/links", async () => {
-      const result = await createGoogleCalendarEvent("user-1", {
-        ...baseEvent,
-        bookingId: "b-1",
-      });
+      const result = await createGoogleCalendarEvent("user-1", baseEvent);
       expect(g.events.insert).toHaveBeenCalledWith({
         calendarId: "primary",
         conferenceDataVersion: 1,
         sendUpdates: "all",
         requestBody: {
           summary: "Intro call",
-          description: [
-            "Chat",
-            "---",
-            "Cancel this booking: https://app.test/booking/cancel/b-1",
-            "Reschedule this booking: https://app.test/booking/reschedule/b-1",
-          ].join("\n"),
+          description: "Chat",
           start: { dateTime: "2026-03-02T10:00:00.000Z" },
           end: { dateTime: "2026-03-02T10:30:00.000Z" },
           attendees: [{ email: "guest@example.com" }],
@@ -271,22 +263,19 @@ describe("google-calendar", () => {
       expect(a).not.toBe(b);
     });
 
-    it("omits cancel/reschedule lines without bookingId", async () => {
+    it("passes the description through unchanged, adding no links", async () => {
       await createGoogleCalendarEvent("user-1", baseEvent);
       const desc = g.events.insert.mock.calls[0][0].requestBody.description;
-      expect(desc).toBe("Chat\n---");
+      expect(desc).toBe("Chat");
     });
 
     it("handles a missing description", async () => {
       await createGoogleCalendarEvent("user-1", {
         ...baseEvent,
         description: undefined,
-        bookingId: "b-1",
       });
       const desc = g.events.insert.mock.calls[0][0].requestBody.description;
-      expect(desc).toBe(
-        "---\nCancel this booking: https://app.test/booking/cancel/b-1\nReschedule this booking: https://app.test/booking/reschedule/b-1",
-      );
+      expect(desc).toBeUndefined();
     });
 
     it("maps multiple attendees and an empty list", async () => {
@@ -305,17 +294,6 @@ describe("google-calendar", () => {
       expect(g.events.insert.mock.calls[1][0].requestBody.attendees).toEqual(
         [],
       );
-    });
-
-    it("falls back to localhost when NEXTAUTH_URL is unset", async () => {
-      vi.stubEnv("NEXTAUTH_URL", "");
-      await createGoogleCalendarEvent("user-1", {
-        ...baseEvent,
-        bookingId: "b-1",
-      });
-      const desc = g.events.insert.mock.calls[0][0].requestBody.description;
-      expect(desc).toContain("http://localhost:3000/booking/cancel/b-1");
-      expect(desc).toContain("http://localhost:3000/booking/reschedule/b-1");
     });
 
     it("rejects when the calendar is not connected, without calling Google", async () => {
