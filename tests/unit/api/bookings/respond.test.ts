@@ -14,6 +14,7 @@ import {
   sendProposalDeclinedEmail,
 } from "@/lib/resend";
 import { buildBooking, buildUser } from "../../helpers/builders";
+import { useTestEnv } from "../../helpers/env";
 import type { PrismaMock } from "../../helpers/prisma-mock";
 import { jsonRequest, params } from "../../helpers/route";
 
@@ -31,6 +32,9 @@ vi.mock("@/lib/resend", () => ({
   sendProposalApprovedEmail: vi.fn(),
   sendProposalDeclinedEmail: vi.fn(),
 }));
+
+// biome-ignore lint/correctness/useHookAtTopLevel: not a React hook
+useTestEnv();
 
 const prisma = prismaImport as unknown as PrismaMock;
 const authMock = auth as unknown as ReturnType<typeof vi.fn>;
@@ -234,7 +238,6 @@ describe("POST /api/bookings/[id]/respond", () => {
 
         const [userId, input] = createEvent.mock.calls[0];
         expect(userId).toBe("user-1");
-        expect(input.bookingId).toBe("booking-1");
         expect(input.attendees).toEqual(["guest@example.com"]);
         expect(input.description).toBe(
           [
@@ -242,6 +245,9 @@ describe("POST /api/bookings/[id]/respond", () => {
             "Email: guest@example.com",
             "Notes: notes",
             "Guest message: please",
+            "---",
+            "Cancel this booking: https://app.test/booking/cancel/booking-1",
+            "Reschedule this booking: https://app.test/booking/reschedule/booking-1",
           ].join("\n"),
         );
         // calls[0] confirms in the transaction, calls[1] stores google info
@@ -261,7 +267,13 @@ describe("POST /api/bookings/[id]/respond", () => {
         createEvent.mockResolvedValue({ eventId: "g-1" } as never);
         await respond({ action: "approve" });
         expect(createEvent.mock.calls[0][1].description).toBe(
-          "Meeting with Guest\nEmail: guest@example.com",
+          [
+            "Meeting with Guest",
+            "Email: guest@example.com",
+            "---",
+            "Cancel this booking: https://app.test/booking/cancel/booking-1",
+            "Reschedule this booking: https://app.test/booking/reschedule/booking-1",
+          ].join("\n"),
         );
         expect(prisma.booking.update.mock.calls[1][0].data).toEqual({
           googleCalendarEventId: "g-1",

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { bookingHostSelect } from "@/lib/booking-host";
+import { buildBookingDescription } from "@/lib/booking-links";
 import {
   createGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
@@ -133,20 +134,16 @@ export async function POST(
       if (isConnected) {
         const calendarEvent = await createGoogleCalendarEvent(user.id, {
           summary: booking.eventType.title,
-          description: [
+          description: buildBookingDescription(booking.id, [
             `Meeting with ${booking.guestName}`,
             `Email: ${booking.guestEmail}`,
-            booking.guestNotes ? `Notes: ${booking.guestNotes}` : "",
-            booking.proposalMessage
-              ? `Guest message: ${booking.proposalMessage}`
-              : "",
-          ]
-            .filter(Boolean)
-            .join("\n"),
+            booking.guestNotes && `Notes: ${booking.guestNotes}`,
+            booking.proposalMessage &&
+              `Guest message: ${booking.proposalMessage}`,
+          ]),
           startTime: booking.startTime,
           endTime: booking.endTime,
           attendees: [booking.guestEmail],
-          bookingId: booking.id,
         });
 
         orphanedEventId = calendarEvent.eventId;

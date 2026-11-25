@@ -285,18 +285,16 @@ describe("POST /api/bookings", () => {
       expect(createEvent).toHaveBeenCalledTimes(1);
       const [userId, input] = createEvent.mock.calls[0];
       expect(userId).toBe("user-1");
-      expect(input.bookingId).toBe("booking-1");
       expect(input.summary).toBe("30 Minute Meeting");
       expect(input.attendees).toEqual(["guest@example.com"]);
       expect(input.description).toContain("Meeting with Guest");
       expect(input.description).toContain("Email: guest@example.com");
       expect(input.description).toContain("Notes:\nhello");
       expect(input.description).toContain(
-        "Cancel: https://app.test/booking/cancel/booking-1",
+        "Cancel this booking: https://app.test/booking/cancel/booking-1\nReschedule this booking: https://app.test/booking/reschedule/booking-1",
       );
-      expect(input.description).toContain(
-        "Reschedule: https://app.test/booking/reschedule/booking-1",
-      );
+      // One link block only (the lib no longer appends a second one).
+      expect(input.description?.match(/Cancel this booking/g)).toHaveLength(1);
 
       expect(prisma.booking.update).toHaveBeenCalledWith({
         where: { id: "booking-1" },

@@ -127,8 +127,8 @@ describe("POST /api/bookings/[id]/reschedule", () => {
       expect.objectContaining({
         startTime: expect.any(Date),
         endTime: expect.any(Date),
-        description: expect.stringContaining(
-          "Cancel this booking: https://app.test/booking/cancel/booking-1\nReschedule this booking: https://app.test/booking/reschedule/booking-1",
+        description: expect.stringMatching(
+          /^Meeting with .+\nEmail: .+\n---\nCancel this booking: https:\/\/app\.test\/booking\/cancel\/booking-1\nReschedule this booking: https:\/\/app\.test\/booking\/reschedule\/booking-1$/,
         ),
       }),
     );
