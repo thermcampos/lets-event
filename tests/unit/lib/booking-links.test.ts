@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getBookingLinks } from "@/lib/booking-links";
+import { buildBookingDescription, getBookingLinks } from "@/lib/booking-links";
 import { signBookingToken, verifyBookingToken } from "@/lib/booking-token";
 import { useTestEnv } from "../helpers/env";
 
@@ -22,6 +22,27 @@ describe("getBookingLinks", () => {
     vi.stubEnv("NEXTAUTH_URL", "");
     expect(getBookingLinks("b-1", EXPIRY).cancelUrl).toMatch(
       /^http:\/\/localhost:3000\/booking\/cancel\/b-1\?token=/,
+    );
+  });
+});
+
+describe("buildBookingDescription", () => {
+  it("joins the details, drops empty ones, and ends with one link block", () => {
+    const token = signBookingToken("b-1", EXPIRY);
+    expect(
+      buildBookingDescription("b-1", EXPIRY, [
+        "Meeting with Ann",
+        "",
+        null,
+        false,
+      ]),
+    ).toBe(
+      [
+        "Meeting with Ann",
+        "---",
+        `Cancel this booking: https://app.test/booking/cancel/b-1?token=${token}`,
+        `Reschedule this booking: https://app.test/booking/reschedule/b-1?token=${token}`,
+      ].join("\n"),
     );
   });
 });

@@ -110,7 +110,6 @@ describe("google-calendar stateful simulation", () => {
     startTime: new Date("2026-03-02T10:00:00Z"),
     endTime: new Date("2026-03-02T10:30:00Z"),
     attendees: ["guest@example.com"],
-    bookingId: "b-1",
   };
 
   it("create -> reschedule -> cancel leaves no events", async () => {

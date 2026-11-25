@@ -179,14 +179,17 @@ describe("POST /api/bookings/[id]/reschedule", () => {
     );
     updateEvent.mockResolvedValue({ meetLink: "https://meet/new" });
     await call();
+    const token = signBookingToken("booking-1", new Date(body.endTime));
     expect(updateEvent).toHaveBeenCalledWith(
       "user-1",
       "ge-1",
       expect.objectContaining({
         startTime: expect.any(Date),
         endTime: expect.any(Date),
-        description: expect.stringContaining(
-          `Cancel this booking: https://app.test/booking/cancel/booking-1?token=${signBookingToken("booking-1", new Date(body.endTime))}\nReschedule this booking: https://app.test/booking/reschedule/booking-1?token=`,
+        description: expect.stringMatching(
+          new RegExp(
+            `^Meeting with .+\\nEmail: .+\\n---\\nCancel this booking: https://app\\.test/booking/cancel/booking-1\\?token=${token}\\nReschedule this booking: https://app\\.test/booking/reschedule/booking-1\\?token=${token}$`,
+          ),
         ),
       }),
     );

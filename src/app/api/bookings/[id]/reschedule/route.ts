@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { canManageBooking, getBookingToken } from "@/lib/booking-access";
-import { getBookingLinks } from "@/lib/booking-links";
+import { buildBookingDescription } from "@/lib/booking-links";
 import {
   ACTIVE_BOOKING_STATUS,
   overlapsRange,
@@ -112,22 +112,11 @@ export async function POST(
     let meetLink = booking.meetLink;
     if (booking.googleCalendarEventId) {
       try {
-        const { cancelUrl, rescheduleUrl } = getBookingLinks(
-          booking.id,
-          newEndTime,
-        );
-
-        const description = [
-          booking.eventType.description || "",
-          "",
-          booking.guestNotes ? `Notes from guest:\n${booking.guestNotes}` : "",
-          "",
-          "---",
-          `Cancel this booking: ${cancelUrl}`,
-          `Reschedule this booking: ${rescheduleUrl}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
+        const description = buildBookingDescription(booking.id, newEndTime, [
+          `Meeting with ${booking.guestName}`,
+          `Email: ${booking.guestEmail}`,
+          booking.guestNotes && `Notes:\n${booking.guestNotes}`,
+        ]);
 
         const updated = await updateGoogleCalendarEvent(
           booking.userId,
