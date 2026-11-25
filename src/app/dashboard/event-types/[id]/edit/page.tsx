@@ -11,6 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  deleteEventType as removeEventType,
+  updateEventType as saveEventType,
+} from "@/lib/actions/event-types";
 import { prisma } from "@/lib/prisma.server";
 import { DeleteButton } from "./delete-button";
 
@@ -40,67 +44,12 @@ export default async function EditEventTypePage({
 
   async function updateEventType(formData: FormData) {
     "use server";
-
-    const session = await auth();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const title = formData.get("title") as string;
-    const slug = formData.get("slug") as string;
-    const description = formData.get("description") as string;
-    const duration = Number.parseInt(formData.get("duration") as string, 10);
-    const active = formData.get("active") === "on";
-    const maxBookingsPerWeek = formData.get("maxBookingsPerWeek")
-      ? Number.parseInt(formData.get("maxBookingsPerWeek") as string, 10)
-      : null;
-    const minimumNoticeHours = formData.get("minimumNoticeHours")
-      ? Number.parseInt(formData.get("minimumNoticeHours") as string, 10)
-      : 24;
-    const maximumNoticeDays = formData.get("maximumNoticeDays")
-      ? Number.parseInt(formData.get("maximumNoticeDays") as string, 10)
-      : 14;
-
-    if (!title || !slug || !duration) {
-      throw new Error("Missing required fields");
-    }
-
-    await prisma.eventType.update({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-      data: {
-        title,
-        slug,
-        description,
-        duration,
-        active,
-        maxBookingsPerWeek,
-        minimumNoticeHours,
-        maximumNoticeDays,
-      },
-    });
-
-    redirect("/dashboard/event-types");
+    await saveEventType(id, formData);
   }
 
   async function deleteEventType() {
     "use server";
-
-    const session = await auth();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    await prisma.eventType.delete({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-    });
-
-    redirect("/dashboard/event-types");
+    await removeEventType(id, "/dashboard/event-types");
   }
 
   return (

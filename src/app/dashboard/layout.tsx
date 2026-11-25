@@ -1,7 +1,7 @@
 import { Calendar, Menu } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { signOutUser } from "@/lib/actions/auth";
 
 async function handleSignOut() {
   "use server";
-  await signOut({ redirectTo: "/" });
+  await signOutUser();
 }
 
 export default async function DashboardLayout({

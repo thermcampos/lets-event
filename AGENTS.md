@@ -83,6 +83,7 @@ src/                     # All application code (@/* alias -> src/*)
   lib/
     ├── prisma.ts          # Server-side Prisma client import (re-exports from prisma.server)
     ├── prisma.server.ts   # Prisma client with pg adapter (DO NOT import in middleware/client)
+    ├── actions/           # Server action bodies (importable, unit-tested); pages hold thin "use server" wrappers
     ├── slots.ts           # Slot calculation logic
     ├── google-calendar.ts # Google Calendar API integration
     ├── resend.ts          # Email sending

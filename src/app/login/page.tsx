@@ -1,7 +1,4 @@
-import { redirect } from "next/navigation";
-import { AuthError } from "next-auth";
 import { Suspense } from "react";
-import { signIn } from "@/auth";
 import { AuthToast } from "@/components/auth-toast";
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -13,27 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { loginUser } from "@/lib/actions/auth";
 
 async function handleLogin(formData: FormData) {
   "use server";
-
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-
-  try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      redirect("/login?error=invalid");
-    }
-    throw error;
-  }
-
-  redirect("/dashboard");
+  await loginUser(formData);
 }
 
 export default function LoginPage() {
