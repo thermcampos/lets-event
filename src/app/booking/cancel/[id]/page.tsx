@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,18 +23,24 @@ export default function CancelPage({ params }: CancelPageProps) {
   const [submitting, setSubmitting] = useState(false);
   const [cancelled, setCancelled] = useState(false);
 
-  // Get booking ID from params
-  useState(() => {
+  const [token, setToken] = useState<string>("");
+
+  // Get booking ID from params and the signed token from the link
+  useEffect(() => {
     params.then((p) => setBookingId(p.id));
-  });
+    setToken(new URLSearchParams(window.location.search).get("token") ?? "");
+  }, [params]);
 
   const handleCancel = async () => {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/bookings/${bookingId}/cancel${token ? `?token=${encodeURIComponent(token)}` : ""}`,
+        {
+          method: "POST",
+        },
+      );
 
       if (!response.ok) {
         const data = await response.json();

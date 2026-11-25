@@ -1,6 +1,8 @@
 // @vitest-environment node
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/bookings/route";
+import { signBookingToken } from "@/lib/booking-token";
 import {
   createGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
@@ -291,11 +293,12 @@ describe("POST /api/bookings", () => {
       expect(input.description).toContain("Meeting with Guest");
       expect(input.description).toContain("Email: guest@example.com");
       expect(input.description).toContain("Notes:\nhello");
+      const token = signBookingToken("booking-1", new Date(input.endTime));
       expect(input.description).toContain(
-        "Cancel: https://app.test/booking/cancel/booking-1",
+        `Cancel: https://app.test/booking/cancel/booking-1?token=${token}`,
       );
       expect(input.description).toContain(
-        "Reschedule: https://app.test/booking/reschedule/booking-1",
+        `Reschedule: https://app.test/booking/reschedule/booking-1?token=${token}`,
       );
 
       expect(prisma.booking.update).toHaveBeenCalledWith({

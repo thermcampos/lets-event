@@ -8,7 +8,8 @@ import {
 import { useTestEnv } from "../../helpers/env";
 import { jsonRequest, params } from "../../helpers/route";
 
-const { prismaMock, updateEvent, sendEmail } = vi.hoisted(() => ({
+const { prismaMock, updateEvent, sendEmail, authMock } = vi.hoisted(() => ({
+  authMock: vi.fn(),
   updateEvent: vi.fn(),
   sendEmail: vi.fn(),
   prismaMock: {
@@ -21,6 +22,7 @@ const { prismaMock, updateEvent, sendEmail } = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("@/auth", () => ({ auth: authMock }));
 vi.mock("@/lib/prisma.server", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/google-calendar", () => ({
   updateGoogleCalendarEvent: updateEvent,
@@ -28,6 +30,7 @@ vi.mock("@/lib/google-calendar", () => ({
 vi.mock("@/lib/resend", () => ({ sendBookingRescheduledEmail: sendEmail }));
 
 import { POST } from "@/app/api/bookings/[id]/reschedule/route";
+import { signBookingToken } from "@/lib/booking-token";
 
 // biome-ignore lint/correctness/useHookAtTopLevel: not a React hook
 useTestEnv();
@@ -39,9 +42,14 @@ const body = {
   startTime: "2026-03-10T10:00:00.000Z",
   endTime: "2026-03-10T10:30:00.000Z",
 };
-const call = (b: unknown = body) =>
+const validToken = () =>
+  signBookingToken("booking-1", new Date("2099-01-01T00:00:00Z"));
+const call = (b: unknown = body, token: string | null = validToken()) =>
   POST(
-    jsonRequest("https://app.test/api/bookings/booking-1/reschedule", b),
+    jsonRequest(
+      `https://app.test/api/bookings/booking-1/reschedule${token ? `?token=${token}` : ""}`,
+      b,
+    ),
     params({ id: "booking-1" }),
   );
 
@@ -68,6 +76,66 @@ describe("POST /api/bookings/[id]/reschedule", () => {
   it("404 when booking does not exist", async () => {
     prismaMock.booking.findUnique.mockResolvedValue(null);
     expect((await call()).status).toBe(404);
+  });
+
+  describe("authorization", () => {
+    beforeEach(() => {
+      prismaMock.booking.findUnique.mockResolvedValue(buildBooking());
+    });
+    afterEach(() => vi.unstubAllEnvs());
+
+    const denied = async (res: Response) => {
+      expect(res.status).toBe(403);
+      expect(await res.json()).toEqual({ error: "Invalid or expired link" });
+      expect(prismaMock.booking.update).not.toHaveBeenCalled();
+      expect(updateEvent).not.toHaveBeenCalled();
+      expect(sendEmail).not.toHaveBeenCalled();
+    };
+
+    it("403 without a token", async () => denied(await call(body, null)));
+    it("403 with a garbage token", async () =>
+      denied(await call(body, "nope")));
+    it("403 with a token signed for another booking", async () =>
+      denied(
+        await call(
+          body,
+          signBookingToken("other", new Date("2099-01-01T00:00:00Z")),
+        ),
+      ));
+    it("403 with an expired token", async () =>
+      denied(
+        await call(body, signBookingToken("booking-1", new Date("2026-01-01"))),
+      ));
+
+    it("allows the signed-in host who owns the booking, without a token", async () => {
+      authMock.mockResolvedValue({ user: { id: "user-1" } });
+      expect((await call(body, null)).status).toBe(307);
+    });
+
+    it("denies a different signed-in user", async () => {
+      authMock.mockResolvedValue({ user: { id: "user-2" } });
+      await denied(await call(body, null));
+    });
+
+    it("accepts token-less requests only during the legacy grace period", async () => {
+      vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2099-01-01T00:00:00Z");
+      expect((await call(body, null)).status).toBe(307);
+    });
+
+    it("ignores an elapsed grace period", async () => {
+      vi.stubEnv("BOOKING_LINK_LEGACY_UNTIL", "2020-01-01T00:00:00Z");
+      await denied(await call(body, null));
+    });
+
+    it("re-signs the calendar links to expire at the new end time", async () => {
+      prismaMock.booking.findUnique.mockResolvedValue(
+        buildBooking({ googleCalendarEventId: "ge-1" }),
+      );
+      await call();
+      const description = updateEvent.mock.calls[0][2].description as string;
+      const token = signBookingToken("booking-1", new Date(body.endTime));
+      expect(description).toContain(`/booking/cancel/booking-1?token=${token}`);
+    });
   });
 
   it("400 when booking is cancelled", async () => {
@@ -128,7 +196,7 @@ describe("POST /api/bookings/[id]/reschedule", () => {
         startTime: expect.any(Date),
         endTime: expect.any(Date),
         description: expect.stringContaining(
-          "Cancel this booking: https://app.test/booking/cancel/booking-1\nReschedule this booking: https://app.test/booking/reschedule/booking-1",
+          `Cancel this booking: https://app.test/booking/cancel/booking-1?token=${signBookingToken("booking-1", new Date(body.endTime))}\nReschedule this booking: https://app.test/booking/reschedule/booking-1?token=`,
         ),
       }),
     );

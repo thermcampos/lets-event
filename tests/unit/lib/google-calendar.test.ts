@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { signBookingToken } from "@/lib/booking-token";
 import { buildAccount } from "../helpers/builders";
 import { useTestEnv } from "../helpers/env";
 
@@ -35,6 +36,9 @@ import {
 useTestEnv();
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+// Computed per test: the signing secret is stubbed by useTestEnv.
+const token = () => signBookingToken("b-1", new Date("2026-03-02T10:30:00Z"));
 
 const baseEvent = {
   summary: "Intro call",
@@ -232,8 +236,8 @@ describe("google-calendar", () => {
           description: [
             "Chat",
             "---",
-            "Cancel this booking: https://app.test/booking/cancel/b-1",
-            "Reschedule this booking: https://app.test/booking/reschedule/b-1",
+            `Cancel this booking: https://app.test/booking/cancel/b-1?token=${token()}`,
+            `Reschedule this booking: https://app.test/booking/reschedule/b-1?token=${token()}`,
           ].join("\n"),
           start: { dateTime: "2026-03-02T10:00:00.000Z" },
           end: { dateTime: "2026-03-02T10:30:00.000Z" },
@@ -285,7 +289,7 @@ describe("google-calendar", () => {
       });
       const desc = g.events.insert.mock.calls[0][0].requestBody.description;
       expect(desc).toBe(
-        "---\nCancel this booking: https://app.test/booking/cancel/b-1\nReschedule this booking: https://app.test/booking/reschedule/b-1",
+        `---\nCancel this booking: https://app.test/booking/cancel/b-1?token=${token()}\nReschedule this booking: https://app.test/booking/reschedule/b-1?token=${token()}`,
       );
     });
 
@@ -314,8 +318,10 @@ describe("google-calendar", () => {
         bookingId: "b-1",
       });
       const desc = g.events.insert.mock.calls[0][0].requestBody.description;
-      expect(desc).toContain("http://localhost:3000/booking/cancel/b-1");
-      expect(desc).toContain("http://localhost:3000/booking/reschedule/b-1");
+      expect(desc).toContain("http://localhost:3000/booking/cancel/b-1?token=");
+      expect(desc).toContain(
+        "http://localhost:3000/booking/reschedule/b-1?token=",
+      );
     });
 
     it("rejects when the calendar is not connected, without calling Google", async () => {

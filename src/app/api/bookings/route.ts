@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     try {
       const isConnected = await isGoogleCalendarConnected(eventType.userId);
       if (isConnected) {
-        const { cancelUrl, rescheduleUrl } = getBookingLinks(booking.id);
+        const { cancelUrl, rescheduleUrl } = getBookingLinks(booking.id, end);
 
         const descriptionParts = [
           `Meeting with ${guestName}`,

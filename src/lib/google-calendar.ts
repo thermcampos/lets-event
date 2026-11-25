@@ -70,7 +70,7 @@ export async function createGoogleCalendarEvent(
   const calendar = await getGoogleCalendarClient(userId);
 
   const { cancelUrl, rescheduleUrl } = event.bookingId
-    ? getBookingLinks(event.bookingId)
+    ? getBookingLinks(event.bookingId, event.endTime)
     : { cancelUrl: "", rescheduleUrl: "" };
 
   const description = [
